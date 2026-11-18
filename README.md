@@ -39,6 +39,7 @@ Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md`
 | USSD check + SMS result submission | **Built** | `/api/ussd`, `/api/sms`, `src/lib/sms-codec.ts` |
 | AI reading of EC8A photos (feeds the tree) | **Built** | `/api/photo`, `src/lib/providers/vision.ts` |
 | Fake-result checker | **Built** (stretch) | `/api/check-image` |
+| Public Trust Desk: result trail, image check, private incident intake | **Built** | `/`, `src/components/PublicTrustDesk.tsx`, `/api/incidents` |
 | Tribunal evidence pack (PDF) | **Built** (stretch) | `/api/tribunal?pu=034` or `?ward=4`, button in the detail panel |
 | Local-language voice calls | **Partly** (stretch) | voice alert queued + spoken in browser sim; no real voice gateway yet |
 | IReV / E Don Kast feeds, observer partnerships, offline P2P | Roadmap slide only | — |
@@ -59,7 +60,7 @@ Other commands: `LANG YO` (EN, PCM, HA, YO, IG), `VOICE ON|OFF`. USSD: `*347*PU#
 
 | Role | How you get it | Can open |
 |---|---|---|
-| Public | no account | `/` (landing + **Check a polling unit**), `/login`, `/register`, `/api/public/pu/<code>` |
+| Public | no account | `/` (**Trust Desk**: trace a result, check an image, send a private incident report), `/login`, `/register`, `/api/public/pu/<code>` |
 | **Witness** | self-register, then confirm your phone with an SMS code | `/witness` — submit your wall (figures or photo), see your walls' status, your alerts, language/voice prefs |
 | **Observer** | created by an admin | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
 | **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, reset) and `/phone` (simulators) |
@@ -89,7 +90,7 @@ Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` 
 ## 3-minute demo script
 
 0. Before you start: sign in as **admin** (one-click on `/login`) — the simulators and reset live there; use a second window as **observer** for the Proof Tree.
-1. **0:00 – 0:25** `/phone` → WhatsApp phone: send `pu034-genuine.png`. *"Did my wall survive the journey?"*
+1. **0:00 – 0:25** `/` → **Trust Desk**: try PU `034`, then check `pu034-edited.png`. The result trail explains the evidence in plain language; the image check says it does not match five witnesses. Show **Raise a concern**: reports are private and labelled unverified rather than becoming a rumour feed.
 2. **0:25 – 1:00** Party-agent phone: build & send the SMS for PU 017 (see `DEMO-DATA.md`); WhatsApp-submit `pu017-live.png` / `pu029-live.png`. Sign in as the observer, open `/dashboard` and watch the Proof Tree fill.
 3. **1:00 – 1:50** `/ear` → play **Ward 04 collation**. PU 034 flags, then Ward 04 flashes red: *"announced A 3,120 … posted 1,880 … +1,240 unexplained."*
 4. **1:50 – 2:20** `/phone` → Amaka's phone buzzes (Igbo). Dial `*347*034#` → ALERT with the proof. (Switch to Tunde for the Yorùbá SMS + voice call.)
