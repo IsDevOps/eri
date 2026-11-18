@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
 import { usePoll } from "@/lib/client";
 import { LANGS, LANG_NAMES, PARTIES, fmt, type Lang } from "@/lib/config";
@@ -46,8 +46,14 @@ export default function WitnessPortal() {
 function Verify({ onDone }: { onDone: () => void }) {
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
-  const [hint, setHint] = useState<string | null>(null);
-  useEffect(() => setHint(sessionStorage.getItem("eri_devcode")), []);
+  // demo-mode SMS code stashed by the register form; server render sees null, the browser sees the stored value
+  const stored = useSyncExternalStore(
+    () => () => {},
+    () => sessionStorage.getItem("eri_devcode"),
+    () => null,
+  );
+  const [resent, setResent] = useState<string | null>(null);
+  const hint = resent ?? stored;
   async function check(e: React.FormEvent) {
     e.preventDefault();
     const r = await post("/api/auth/verify-phone", { code });
@@ -61,7 +67,7 @@ function Verify({ onDone }: { onDone: () => void }) {
     if (!r.ok) setErr(j.error);
     else {
       setErr("");
-      if (j.devCode) setHint(j.devCode);
+      if (j.devCode) setResent(j.devCode);
     }
   }
   return (
