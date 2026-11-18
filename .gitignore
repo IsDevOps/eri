@@ -43,3 +43,6 @@ next-env.d.ts
 # Eri
 /data/uploads
 !.env.example
+
+# local tooling
+.claude/
