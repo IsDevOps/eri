@@ -119,7 +119,7 @@ export function PublicTrustDesk() {
 
   return (
     <section aria-label="Election day trust desk" className="overflow-hidden rounded-3xl border border-white/10 bg-[#121a25] shadow-2xl shadow-sky-950/20">
-      <div className="border-b border-white/10 bg-gradient-to-r from-sky-500/15 via-transparent to-emerald-400/10 px-5 py-5 sm:px-6">
+      <div className="border-b border-white/10 bg-linear-to-r from-sky-500/15 via-transparent to-emerald-400/10 px-5 py-5 sm:px-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-200">Election-day trust desk</p>
@@ -186,7 +186,7 @@ export function PublicTrustDesk() {
           <form onSubmit={verifyImage} className="eri-in max-w-2xl">
             <h3 className="font-semibold text-white">Check a forwarded result sheet</h3>
             <p className="mt-1 text-sm leading-relaxed text-slate-400">Upload an EC8A image. We compare its figures with independent witness submissions; the image is checked but not saved by this tool.</p>
-            <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/20 bg-white/[0.025] p-4 transition hover:border-sky-300/50 hover:bg-sky-400/[0.04]">
+            <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/20 bg-white/2.5 p-4 transition hover:border-sky-300/50 hover:bg-sky-400/[0.04]">
               <span className="grid h-10 w-10 place-items-center rounded-lg bg-sky-400/10 text-sm font-semibold text-sky-200">IMG</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-slate-200">{image?.name ?? "Choose a result-sheet image"}</span>
