@@ -39,7 +39,7 @@ export interface TreeNode {
   unwitnessedCapacity?: number; // registered voters in unwitnessed PUs (upper bound of unexplained votes)
 }
 
-interface Row {
+export interface Row {
   lgas: { id: number; code: string; name: string; state: string }[];
   wards: { id: number; lga_id: number; number: number; name: string }[];
   pus: { id: number; ward_id: number; code: string; name: string; registered: number }[];

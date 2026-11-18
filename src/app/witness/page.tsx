@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
 import { usePoll } from "@/lib/client";
 import { LANGS, LANG_NAMES, PARTIES, fmt, type Lang } from "@/lib/config";
@@ -64,7 +65,7 @@ function Verify({ onDone }: { onDone: () => void }) {
     if (!r.ok) setErr(j.error);
     else {
       setErr("");
-      if (j.devCode) setHint(j.devCode);
+      if (j.devCode) setResent(j.devCode);
     }
   }
   return (
