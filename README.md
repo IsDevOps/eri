@@ -55,6 +55,48 @@ Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md`
 `R 012 A120 B85 C40 #7F3` → result for PU 012. `#7F3` is a 3-hex checksum; a garbled message is rejected with the corrected text.
 Other commands: `LANG YO` (EN, PCM, HA, YO, IG), `VOICE ON|OFF`. USSD: `*347*PU#`.
 
+## Architecture
+
+```
+ SMS / USSD / WhatsApp / web ──►  src/app/api/*  (thin route handlers, each wrapped in guard(...))
+ photos, audio                          │
+                                        ▼
+                           src/lib/services.ts   submissions, alarms, collation entries, audit
+                           src/lib/reconcile.ts  pure hop-by-hop reconciliation  ──► Proof Tree
+                           src/lib/extract.ts    transcript ──► figures (rules, or Claude if keyed)
+                           src/lib/sms-codec.ts  `R 012 A120 B85 #7F3` encode / parse / checksum
+                                        │
+              src/lib/providers/  sms · stt · vision   (simulator by default, real API when a key is set)
+                                        │
+                                   PostgreSQL  (src/lib/schema.ts, plain SQL via src/lib/db.ts)
+```
+
+| Folder | What lives there |
+|---|---|
+| `src/app/` | Pages by role: `/` public, `/witness`, `/dashboard`, `/ear`, `/admin`, `/phone` (simulators), `/login`, `/register` |
+| `src/app/api/` | HTTP endpoints; auth + role check first, then a call into `src/lib` |
+| `src/lib/` | All business logic. `reconcile.ts`, `sms-codec.ts`, `numbers.ts`, `extract.ts` are pure and unit-tested |
+| `src/lib/providers/` | One file per external capability, each with a simulator and a real implementation behind the same function |
+| `src/components/` | Shared UI: Nav, TreeView, AuthForm, PuCheck |
+| `src/proxy.ts` | Optimistic redirect for signed-out / wrong-role visitors (Next.js 16 renamed Middleware to Proxy) |
+| `scripts/` | `seed.ts` (schema + synthetic data + demo assets), `ensure-seed.ts` (Docker first-run check) |
+| `tests/` | Unit tests (`node:test`) |
+
+Design choices worth knowing: reconciliation is a pure function of rows (`buildTreeFromRows`), so the Proof Tree is
+testable without a database; every external dependency is behind an interface with an offline simulator, so the demo
+never depends on network or keys.
+
+## Tests and checks
+
+```bash
+npm test             # unit tests: reconciliation, SMS checksum, number parsing, extractor, sessions/passwords
+npm run lint
+npm run typecheck
+npm run build
+```
+
+The same four run in GitHub Actions (`.github/workflows/ci.yml`). Tests need no database or API keys.
+
 ## Accounts, roles and access
 
 | Role | How you get it | Can open |
