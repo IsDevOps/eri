@@ -1,0 +1,12 @@
+[
+  {
+    "file": "ward04-collation.wav",
+    "label": "Ward 04 collation (EC8B): PU 034 read out + ward total",
+    "transcript": "Ward zero four collation. Polling unit zero three four. Party A two hundred and twenty five. Party B one hundred and twenty nine. Party C eighty one. Party D thirty one. Ward zero four total. Party A three thousand one hundred and twenty. Party B one thousand two hundred and eighty. Party C six hundred and ninety six. Party D two hundred and sixteen."
+  },
+  {
+    "file": "lga-collation.wav",
+    "label": "Eriwa LGA collation (EC8C): LGA total",
+    "transcript": "Eriwa local government collation. LGA total. Party A eight thousand seven hundred and sixteen. Party B five thousand four hundred and sixty one. Party C two thousand four hundred and thirty three. Party D eight hundred."
+  }
+]

@@ -1,0 +1,40 @@
+# Local stack: Postgres + the Ẹ̀rí app.  `docker compose up -d --build`  →  http://localhost:3100
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: eri
+      POSTGRES_PASSWORD: eri
+      POSTGRES_DB: eri
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"   # host port 5433 so it never clashes with a local Postgres on 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eri -d eri"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    # optional provider keys (ANTHROPIC_API_KEY, OPENAI_API_KEY, AT_*) are picked up from .env.local if present
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      DATABASE_URL: postgres://eri:eri@db:5432/eri   # overrides the localhost URL in .env.local
+      AUTH_SECRET: ${AUTH_SECRET:-eri-local-docker-secret-change-me}
+      DEMO_LOGINS: ${DEMO_LOGINS:-1}                 # one-click demo logins; set DEMO_LOGINS=0 for anything real
+    volumes:
+      - uploads:/app/data/uploads
+    ports:
+      - "3100:3000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:

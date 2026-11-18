@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* The "wow": an inflated ward flashes red the moment it is announced. */
+@keyframes eri-flash {
+  0%, 100% { background-color: rgba(239, 68, 68, 0.0); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  25%, 75% { background-color: rgba(239, 68, 68, 0.30); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.7); }
+  50% { background-color: rgba(239, 68, 68, 0.08); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+.eri-flash { animation: eri-flash 0.9s ease-in-out 4; }
+
+@keyframes eri-buzz {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-3px) rotate(-1.5deg); }
+  40% { transform: translateX(3px) rotate(1.5deg); }
+  60% { transform: translateX(-2px) rotate(-1deg); }
+  80% { transform: translateX(2px) rotate(1deg); }
+}
+.eri-buzz { animation: eri-buzz 0.4s ease-in-out 6; }
+
+@keyframes eri-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.eri-in { animation: eri-in 0.35s ease-out both; }
