@@ -1,22 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { DeniedNotice, Nav } from "@/components/Nav";
 import { getUser } from "@/lib/auth";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Ẹ̀rí — Trace every vote from the wall to the winner",
-  description: "Watch the collation hops between the polling-unit wall and the final announcement, and alert citizens when their numbers change.",
+  title: "Ẹ̀rí — Evidence from the wall to the final result",
+  description: "Trace polling-unit evidence, check forwarded result sheets, and report election-day concerns safely.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getUser();
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-[#0b0f14] text-slate-200">
         <Nav user={user ? { name: user.name, role: user.role } : null} />
         <Suspense>

@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /** Poll a JSON endpoint. Keeps the last good value so the UI never blanks between ticks. */
 export function usePoll<T>(url: string, ms = 1500): { data: T | null; reload: () => void } {
+  const router = useRouter();
   const [data, setData] = useState<T | null>(null);
   const tick = useRef(0);
   const [n, setN] = useState(0);
@@ -11,7 +13,7 @@ export function usePoll<T>(url: string, ms = 1500): { data: T | null; reload: ()
     const run = async () => {
       try {
         const r = await fetch(url, { cache: "no-store" });
-        if (r.status === 401) window.location.href = "/login"; // session expired
+        if (r.status === 401) router.replace("/login"); // session expired
         else if (alive && r.ok) setData((await r.json()) as T);
       } catch {
         /* offline blip: keep last value */
@@ -24,6 +26,6 @@ export function usePoll<T>(url: string, ms = 1500): { data: T | null; reload: ()
       alive = false;
       clearInterval(id);
     };
-  }, [url, ms, n]);
+  }, [url, ms, n, router]);
   return { data, reload: () => setN((x) => x + 1) };
 }
