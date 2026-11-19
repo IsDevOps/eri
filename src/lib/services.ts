@@ -228,13 +228,13 @@ export async function syncAlarms() {
         notify(notifyPus, id, node.dropped ? "alarm_pu_dropped" : "alarm_pu_changed", (pu) => ({
           pu: pu.code,
           ward: wardNo,
-          wall: tallyStr(node.expected ?? {}),
+          ec8a: tallyStr(node.expected ?? {}),
           read: tallyStr(node.readAtWard ?? {}),
         }));
     } else if (node.level === "ward") {
       kind = "ward_inflated";
       wardId = node.refId;
-      fp = `${kind}:${node.refId}:${tallyKey(node.announced ?? {})}:${tallyKey(node.wallSum)}`;
+      fp = `${kind}:${node.refId}:${tallyKey(node.announced ?? {})}:${tallyKey(node.witnessedSum)}`;
       notifyPus = node.children.map((c) => c.refId);
       send = (id) =>
         notify(notifyPus, id, "alarm_ward_inflated", (pu) => ({
@@ -242,7 +242,7 @@ export async function syncAlarms() {
           ward: pu.ward,
           party: worst,
           announced: node.announced?.[worst as keyof Tally] ?? 0,
-          wallsum: node.wallSum[worst as keyof Tally] ?? 0,
+          ec8asum: node.witnessedSum[worst as keyof Tally] ?? 0,
           gap: Math.abs(node.gap?.[worst as keyof Tally] ?? 0),
         }));
     } else if (node.level === "lga") {
@@ -255,7 +255,7 @@ export async function syncAlarms() {
           pu: pu.code,
           party: worst,
           announced: node.announced?.[worst as keyof Tally] ?? 0,
-          wallsum: node.expected?.[worst as keyof Tally] ?? 0,
+          ec8asum: node.expected?.[worst as keyof Tally] ?? 0,
         }));
     } else continue;
     const row = await q1<{ id: number }>(
@@ -302,9 +302,9 @@ export async function ussdCheck(puCodeRaw: string, lang: Lang): Promise<string> 
   if (!n) return t("ussd_unknown", lang, { pu: code });
   const base = { pu: code, ward: n.wardNumber, n: n.witnesses ?? 0, d: n.disagreeing ?? 0, tally: tallyStr(n.expected ?? {}) };
   if (!n.witnesses) return t("ussd_none", lang, base);
-  if (n.dropped) return t("ussd_dropped", lang, { ...base, wall: tallyStr(n.expected ?? {}) });
+  if (n.dropped) return t("ussd_dropped", lang, { ...base, ec8a: tallyStr(n.expected ?? {}) });
   if (n.readAtWard && n.expected && !tallyEq(n.readAtWard, n.expected))
-    return t("ussd_changed", lang, { ...base, wall: tallyStr(n.expected), read: tallyStr(n.readAtWard) });
+    return t("ussd_changed", lang, { ...base, ec8a: tallyStr(n.expected), read: tallyStr(n.readAtWard) });
   if (n.disagreeing) return t("ussd_contested", lang, base);
   if (n.readAtWard) return t("ussd_verified", lang, base);
   return t("ussd_pending", lang, base);

@@ -10,11 +10,11 @@ export interface NavUser {
 
 const LINKS: Record<Role | "guest", { href: string; label: string }[]> = {
   guest: [
-    { href: "/", label: "Check a wall" },
+    { href: "/", label: "Check a polling unit" },
     { href: "/results", label: "Results trail" },
   ],
   witness: [
-    { href: "/witness", label: "My walls" },
+    { href: "/witness", label: "My polling units" },
     { href: "/results", label: "Results trail" },
   ],
   observer: [

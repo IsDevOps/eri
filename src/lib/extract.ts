@@ -100,7 +100,7 @@ async function extractLLM(transcript: string, ctx: ExtractContext): Promise<Extr
     model: "claude-sonnet-5-5",
     max_tokens: 1500,
     system:
-      "You extract election collation announcements from a transcript of a returning officer reading results aloud (English, Nigerian Pidgin, Hausa, Yoruba or Igbo). " +
+      "You extract election collation announcements from a transcript of a collation officer (ward, LGA or state) reading results aloud (English, Nigerian Pidgin, Hausa, Yoruba or Igbo). " +
       "Parties are the letters A, B, C, D. Return ONLY a JSON array. Each item: " +
       '{"level":"pu_at_ward"|"ward"|"lga"|"state","ward":<number|null>,"pu":"<3-digit string|null>","tally":{"A":n,"B":n,...},"dropped":<bool>}. ' +
       "Use level pu_at_ward for a single polling unit line read at ward collation, ward for a ward total, lga for an LGA total, state for a state total. " +

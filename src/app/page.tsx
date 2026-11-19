@@ -12,9 +12,9 @@ export default async function Landing() {
     <main className="mx-auto max-w-5xl px-5 py-12">
       <section>
         <p className="text-sm uppercase tracking-widest text-sky-300">Every Vote, Every Voice</p>
-        <h1 className="mt-2 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">Did my wall survive the journey?</h1>
+        <h1 className="mt-2 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">Did my polling unit’s result survive the journey?</h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-400">
-          Ẹ̀rí (Yorùbá: <em>witness, proof</em>) watches the hops between the polling-unit wall and the final announcement, and tells the witnesses the moment a
+          Ẹ̀rí (Yorùbá: <em>witness, proof</em>) watches the hops between the polling-unit result (Form EC8A) and the final declaration (EC8E), and tells the witnesses the moment a
           number changes. It complements IReV and E Don Kast — it doesn’t replace them.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
@@ -39,7 +39,7 @@ export default async function Landing() {
           <p className="mt-2 text-xs text-slate-500">On a basic phone, dial <span className="font-mono">*347*PU#</span> for the same answer.</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-[#121821] p-5">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Walls witnessed (synthetic demo)</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Polling units witnessed (synthetic demo)</div>
           <div className="mt-1 text-3xl font-semibold tabular-nums text-white">
             {s?.witnessed}/{s?.pus}
           </div>
@@ -48,11 +48,31 @@ export default async function Landing() {
       </section>
 
       <section className="mt-14">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-300">How a result travels (INEC collation)</h2>
+        <p className="mb-4 text-xs text-slate-500">Ẹ̀rí watches every hop after the polling unit. Form names follow INEC’s election guidelines.</p>
+        <ol className="grid gap-3 md:grid-cols-5">
+          {[
+            ["EC8A", "Polling Unit", "Presiding Officer records the result; a copy is posted (EC60E)."],
+            ["EC8B", "Ward (Registration Area)", "Ward Collation Officer sums the polling units."],
+            ["EC8C", "Local Government Area", "LGA Collation Officer sums the wards."],
+            ["EC8D", "State", "State Collation Officer sums the LGAs."],
+            ["EC8E", "Declaration and Return", "Returning Officer declares the winner (after national collation for the presidency)."],
+          ].map(([form, level, who]) => (
+            <li key={form} className="rounded-xl border border-white/10 bg-[#121821] p-4">
+              <div className="font-mono text-lg text-sky-300">{form}</div>
+              <div className="text-sm font-medium text-white">{level}</div>
+              <p className="mt-1 text-xs text-slate-400">{who}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="mt-14">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-300">Who can do what</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            ["Citizens (public)", "Check any polling unit by code or USSD, and follow the public results trail: what was announced at each hop and whether it traces to the walls. Unofficial; INEC declares results.", "No account"],
-            ["Witnesses", "Sign in, confirm your phone, submit your wall by photo or figures, get SMS (and voice) alerts in your language if it changes.", "Self-register"],
+            ["Citizens (public)", "Check any polling unit by code or USSD, and follow the public results trail: what was announced at each hop and whether it traces to the polling-unit (EC8A) results. Unofficial; INEC declares results.", "No account"],
+            ["Witnesses", "Sign in, confirm your phone, submit your polling unit’s EC8A result by photo or figures, get SMS (and voice) alerts in your language if it changes after it leaves the polling unit.", "Self-register"],
             ["Observers", "See the full Proof Tree, run Live Ear on collation audio, and download tribunal evidence packs.", "Created by an admin"],
           ].map(([t, d, tag]) => (
             <div key={t} className="rounded-xl border border-white/10 bg-[#121821] p-5">

@@ -3,8 +3,8 @@ import { PARTIES, emptyTally, tallyEq, tallyKey, tallyTotal, type Tally } from "
 
 export type Level = "state" | "lga" | "ward" | "pu";
 export type Status =
-  | "verified" // announced figure traces to the walls
-  | "flagged" // announced figure cannot be traced to the walls
+  | "verified" // announced figure traces to the witnessed EC8A results
+  | "flagged" // announced figure cannot be traced to the witnessed EC8A results
   | "contested" // witnesses of the same PU disagree with each other
   | "unverified" // not enough witness coverage to prove or disprove
   | "pending"; // nothing announced at this hop yet
@@ -23,7 +23,7 @@ export interface TreeNode {
   announced: Tally | null; // what was read out at this hop
   expected: Tally | null; // what the hop below proves it should be
   gap: Tally | null; // announced - expected
-  wallSum: Tally; // sum of witnessed PU walls beneath this node
+  witnessedSum: Tally; // sum of witnessed polling-unit EC8A results beneath this node
   coverage: Coverage;
   status: Status;
   reason: string;
@@ -115,13 +115,13 @@ export function buildTreeFromRows(r: Row): TreeNode {
             let reason = "";
             if (!cons) {
               status = "unverified";
-              reason = "No witness has posted this wall yet.";
+              reason = "No witness has submitted this polling unit’s EC8A yet.";
             } else if (dropped) {
               status = "flagged";
               reason = `Dropped at ward collation. ${cons.agree} witness(es) posted this result.`;
             } else if (readAtWard && !tallyEq(readAtWard, cons.tally)) {
               status = "flagged";
-              reason = `Changed at ward collation: wall ${tallyKey(cons.tally)} → read out ${tallyKey(readAtWard)}.`;
+              reason = `Changed at ward collation: EC8A ${tallyKey(cons.tally)} → read out ${tallyKey(readAtWard)}.`;
             } else if (cons.disagree > 0) {
               status = "contested";
               reason = `${cons.disagree} witness(es) disagree with the ${cons.agree} that match.`;
@@ -141,7 +141,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
               announced: readAtWard ?? null,
               expected: cons?.tally ?? null,
               gap: readAtWard && cons ? sub(readAtWard, cons.tally) : null,
-              wallSum: cons ? cons.tally : emptyTally(),
+              witnessedSum: cons ? cons.tally : emptyTally(),
               coverage: { witnessed: cons ? 1 : 0, total: 1 },
               status,
               reason,
@@ -156,7 +156,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
             } satisfies TreeNode;
           });
 
-        const wallSum = puNodes.reduce((s, n) => add(s, n.wallSum), emptyTally() as Tally);
+        const witnessedSum = puNodes.reduce((s, n) => add(s, n.witnessedSum), emptyTally() as Tally);
         const witnessed = puNodes.filter((n) => n.coverage.witnessed).length;
         const unwitnessedCapacity = puNodes.filter((n) => !n.coverage.witnessed).reduce((s, n) => s + (n.registered ?? 0), 0);
         const ann = lastCol((c) => c.level === "ward" && c.ward_id === ward.id);
@@ -167,24 +167,24 @@ export function buildTreeFromRows(r: Row): TreeNode {
         let reason = "Awaiting ward (EC8B) announcement.";
         let gap: Tally | null = null;
         if (announced) {
-          gap = sub(announced, wallSum);
+          gap = sub(announced, witnessedSum);
           const negative = PARTIES.some((p) => (gap![p] ?? 0) < 0);
           const positive = PARTIES.reduce((s, p) => s + Math.max(0, gap![p] ?? 0), 0);
           if (!nonZero(gap)) {
             status = witnessed === puNodes.length ? "verified" : "unverified";
-            reason = `Ward total equals the sum of ${witnessed} witnessed walls.`;
+            reason = `Ward total equals the sum of ${witnessed} witnessed polling-unit results (EC8A).`;
           } else if (negative || positive > unwitnessedCapacity) {
             status = "flagged";
             const worst = [...PARTIES].sort((a, b) => Math.abs(gap![b] ?? 0) - Math.abs(gap![a] ?? 0))[0];
             const g = gap![worst] ?? 0;
             const f = (n: number) => n.toLocaleString("en-US");
-            reason = `Ward ${String(ward.number).padStart(2, "0")} announced ${worst} ${f(announced[worst] ?? 0)}. Its ${witnessed} witnessed polling units posted ${f(wallSum[worst] ?? 0)}. ${g > 0 ? "+" : ""}${f(g)} unexplained.`;
+            reason = `Ward ${String(ward.number).padStart(2, "0")} announced ${worst} ${f(announced[worst] ?? 0)}. Its ${witnessed} witnessed polling units posted ${f(witnessedSum[worst] ?? 0)}. ${g > 0 ? "+" : ""}${f(g)} unexplained.`;
           } else {
             status = "unverified";
             reason = `${positive} extra votes could only come from ${puNodes.length - witnessed} unwitnessed polling unit(s).`;
           }
         } else if (witnessed) {
-          reason = `Awaiting ward announcement. ${witnessed}/${puNodes.length} walls witnessed.`;
+          reason = `Awaiting ward announcement. ${witnessed}/${puNodes.length} polling units witnessed.`;
         }
         if (status !== "flagged" && flaggedBelow > 0 && status === "verified") status = "unverified";
 
@@ -195,9 +195,9 @@ export function buildTreeFromRows(r: Row): TreeNode {
           label: `Ward ${String(ward.number).padStart(2, "0")} · ${ward.name}`,
           code: String(ward.number).padStart(2, "0"),
           announced,
-          expected: wallSum,
+          expected: witnessedSum,
           gap,
-          wallSum,
+          witnessedSum,
           coverage: { witnessed, total: puNodes.length },
           status,
           reason,
@@ -207,7 +207,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
         } satisfies TreeNode;
       });
 
-    const wallSum = wardNodes.reduce((s, n) => add(s, n.wallSum), emptyTally() as Tally);
+    const witnessedSum = wardNodes.reduce((s, n) => add(s, n.witnessedSum), emptyTally() as Tally);
     const coverage = wardNodes.reduce(
       (c, n) => ({ witnessed: c.witnessed + n.coverage.witnessed, total: c.total + n.coverage.total }),
       { witnessed: 0, total: 0 },
@@ -232,8 +232,8 @@ export function buildTreeFromRows(r: Row): TreeNode {
         const bad = wardNodes.filter((w) => w.status === "flagged").length;
         status = bad ? "unverified" : coverage.witnessed === coverage.total ? "verified" : "unverified";
         reason = bad
-          ? "LGA equals the sum of its wards, but some ward totals do not trace to their walls."
-          : `LGA equals the sum of its ${wardNodes.length} wards. ${coverage.witnessed}/${coverage.total} walls witnessed.`;
+          ? "LGA equals the sum of its wards, but some ward totals do not trace to polling-unit results."
+          : `LGA equals the sum of its ${wardNodes.length} wards. ${coverage.witnessed}/${coverage.total} polling units witnessed.`;
       }
     }
     const flaggedBelow = wardNodes.reduce((s, n) => s + n.flaggedBelow + (n.status === "flagged" ? 1 : 0), 0);
@@ -246,7 +246,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
       announced,
       expected: announcedWards.length ? wardSum : null,
       gap,
-      wallSum,
+      witnessedSum,
       coverage,
       status,
       reason,
@@ -255,7 +255,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
     } satisfies TreeNode;
   });
 
-  const wallSum = lgaNodes.reduce((s, n) => add(s, n.wallSum), emptyTally() as Tally);
+  const witnessedSum = lgaNodes.reduce((s, n) => add(s, n.witnessedSum), emptyTally() as Tally);
   const coverage = lgaNodes.reduce(
     (c, n) => ({ witnessed: c.witnessed + n.coverage.witnessed, total: c.total + n.coverage.total }),
     { witnessed: 0, total: 0 },
@@ -288,7 +288,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
     announced,
     expected: announcedLgas.length ? lgaSum : null,
     gap,
-    wallSum,
+    witnessedSum,
     coverage,
     status,
     reason,

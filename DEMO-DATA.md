@@ -6,4 +6,4 @@
 - SMS for PU 029: `R 029 A162 B117 C89 D34 #7A9`
 - Bad-checksum example: `R 017 A159 B121 C44 D33 #17E`
 - Ward 04 witnessed A total: 1880 · announced in clip: 3120 (+1,240)
-- PU 034 wall A=175 → read out at collation A=225
+- PU 034 EC8A A=175 → read out at collation A=225

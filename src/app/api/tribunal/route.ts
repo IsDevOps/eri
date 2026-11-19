@@ -73,14 +73,14 @@ async function handle(req: Request) {
   doc.fontSize(20).font("Helvetica-Bold").fillColor("#111");
   line("Eri evidence pack");
   doc.fontSize(10).font("Helvetica").fillColor("#555");
-  line("Eri (Yoruba: witness, proof) - trace every vote from the wall to the winner");
+  line("Eri (Yoruba: witness, proof) - trace every vote from the polling unit to the declaration");
   line(`Generated ${new Date().toISOString()}  -  SYNTHETIC DEMO DATA (Eriwa LGA, Demo State)`);
   doc.fontSize(9.5).fillColor("#222");
 
   h(`Scope: ${scope.label}${wardNode ? ` (${(wardNode as TreeNode).label.split(" · ")[0]})` : ""}`);
   line(`Status: ${scope.status.toUpperCase()}`);
   line(scope.reason);
-  line(`Walls witnessed: ${scope.coverage.witnessed} of ${scope.coverage.total}`);
+  line(`Polling units witnessed: ${scope.coverage.witnessed} of ${scope.coverage.total}`);
 
   h("Announced vs proven");
   line(`Announced / read out : ${tally(scope.announced)}`);
@@ -89,7 +89,7 @@ async function handle(req: Request) {
 
   if (scope.level === "ward") {
     h("Polling units in this ward");
-    for (const p of puList) line(`PU ${p.code}  wall ${tallyKey(p.expected ?? {}) || "none"}  |  read at ward ${p.readAtWard ? tallyKey(p.readAtWard) : p.dropped ? "DROPPED" : "n/a"}  |  ${p.status}  |  ${p.witnesses ?? 0} witnesses`);
+    for (const p of puList) line(`PU ${p.code}  EC8A ${tallyKey(p.expected ?? {}) || "none"}  |  read at ward ${p.readAtWard ? tallyKey(p.readAtWard) : p.dropped ? "DROPPED" : "n/a"}  |  ${p.status}  |  ${p.witnesses ?? 0} witnesses`);
   }
 
   h("Collation events (what was announced, when, how captured)");

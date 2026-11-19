@@ -64,7 +64,7 @@ create table submission (
   unique (pu_id, phone)
 );
 
--- Figures announced at a collation hop (what the returning officer read out)
+-- Figures announced at a collation hop (what the collation officer read out)
 create table collation_entry (
   id serial primary key,
   level text not null check (level in ('pu_at_ward','ward','lga','state')),
