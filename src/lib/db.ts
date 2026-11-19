@@ -10,10 +10,14 @@ export const pool: Pool =
   });
 if (process.env.NODE_ENV !== "production") globalForPg.__eriPool = pool;
 
+/** In production a missing DATABASE_URL must fail loudly, not silently fall back to localhost (a common hosting mistake). */
+export const dbUrlMissing = () => process.env.NODE_ENV === "production" && !process.env.DATABASE_URL;
+
 export async function q<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: unknown[] = [],
 ): Promise<T[]> {
+  if (dbUrlMissing()) throw new Error("DATABASE_URL is not set. Add it to the host's environment variables (see README → Deploy).");
   const res = await pool.query<T>(text, params);
   return res.rows;
 }

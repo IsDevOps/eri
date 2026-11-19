@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { USSD_CODE, tallyEq, tallyKey, type Lang, type Tally, PARTIES } from "./config";
 import { q, q1 } from "./db";
@@ -71,13 +72,25 @@ export async function submitResult(o: SubmitOpts) {
   return { ok: true as const, agree: node?.witnesses ?? 1, node };
 }
 
+/** Photo storage. UPLOAD_DIR overrides; read-only hosts (serverless) fall back to the temp dir, which does not persist. */
+async function uploadDir(): Promise<string> {
+  const wanted = process.env.UPLOAD_DIR || path.join(process.cwd(), "data/uploads");
+  try {
+    await mkdir(wanted, { recursive: true });
+    return wanted;
+  } catch {
+    const tmp = path.join(os.tmpdir(), "eri-uploads");
+    await mkdir(tmp, { recursive: true });
+    return tmp;
+  }
+}
+
 export async function ingestPhoto(buf: Buffer, mime: string, phone: string, source: "photo" | "whatsapp", lang?: Lang) {
   const reading = await readSheet(buf, mime);
   if (!reading.puCode) return { ok: false as const, error: "Could not read the polling-unit code on the sheet." };
   if (reading.confidence < 0.6) return { ok: false as const, error: "Photo too unclear. Please retake it flat and well lit." };
   const hash = sha256(buf);
-  const dir = path.join(process.cwd(), "data/uploads");
-  await mkdir(dir, { recursive: true });
+  const dir = await uploadDir();
   const ext = (mime.split("/")[1] ?? "bin").replace(/[^a-z0-9]/gi, "").slice(0, 5) || "bin";
   const file = path.join(dir, `${hash}.${ext}`);
   await writeFile(file, buf);

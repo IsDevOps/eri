@@ -122,6 +122,28 @@ npm run build
 
 The same four run in GitHub Actions (`.github/workflows/ci.yml`). Tests need no database or API keys.
 
+## Deploy (Netlify + hosted Postgres)
+
+The app needs a Postgres database; Netlify only hosts the web app. A "This page couldn't load / server error" right after deploying
+almost always means the database is not configured. Open **`/api/health`** on the deployed site: it states what is missing.
+
+1. **Create a Postgres database** (Neon, Supabase, Railway, …) and copy its connection string, with `?sslmode=require`.
+   On serverless hosts prefer the provider's *pooled* connection string.
+2. **Seed it once from your machine** (this drops and recreates the Ẹ̀rí tables, so point it at the right database):
+   ```bash
+   DATABASE_URL='postgres://…?sslmode=require' SEED_KEEP_ASSETS=1 npm run seed
+   ```
+3. **Set environment variables in Netlify** (Site configuration → Environment variables), then redeploy:
+   | Variable | Value |
+   |---|---|
+   | `DATABASE_URL` | the connection string from step 1 |
+   | `AUTH_SECRET` | a long random string (`openssl rand -hex 32`). Required: without it, sessions break across serverless instances |
+   | `COOKIE_SECURE` | `1` (the site is HTTPS) |
+   | `DEMO_LOGINS` | `1` to show one-click demo sign-ins (leave unset for a real deployment) |
+4. Visit `/api/health` → `{"ok":true,…}`, then `/login`.
+
+Serverless limits to know: uploaded photos go to a temp folder that does not persist (set `UPLOAD_DIR` to a persistent disk, or use a host with one), and the in-memory rate limits reset between instances. For a host that runs the app as one long-lived server, use the included `Dockerfile` (Render, Railway, Fly.io) with the same three variables.
+
 ## Accounts, roles and access
 
 | Role | How you get it | Can open |
