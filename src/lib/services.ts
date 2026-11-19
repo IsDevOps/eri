@@ -92,7 +92,7 @@ export async function ingestPhoto(buf: Buffer, mime: string, phone: string, sour
   const hash = sha256(buf);
   const dir = await uploadDir();
   const ext = (mime.split("/")[1] ?? "bin").replace(/[^a-z0-9]/gi, "").slice(0, 5) || "bin";
-  const file = path.join(dir, `${hash}.${ext}`);
+  const file = path.join(/*turbopackIgnore: true*/ dir, `${hash}.${ext}`); // runtime upload path, not a bundle dependency
   await writeFile(file, buf);
   const res = await submitResult({
     puCode: reading.puCode,
