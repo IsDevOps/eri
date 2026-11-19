@@ -40,6 +40,7 @@ Presenter notes (sign-ins, phones, SMS strings, key figures) are written to `PRE
 | USSD check + SMS result submission | **Built** | `/api/ussd`, `/api/sms`, `src/lib/sms-codec.ts` |
 | AI reading of EC8A photos (feeds the tree) | **Built** | `/api/photo`, `src/lib/providers/vision.ts` |
 | Fake-result checker | **Built** (stretch) | `/api/check-image` |
+| Public Trust Desk: result trail, image check, private incident intake | **Built** | `/`, `src/components/PublicTrustDesk.tsx`, `/api/incidents` |
 | Tribunal evidence pack (PDF) | **Built** (stretch) | `/api/tribunal?pu=034` or `?ward=4`, button in the detail panel |
 | Local-language voice calls | **Partly** (stretch) | voice alert queued + spoken in browser sim; no real voice gateway yet |
 | IReV / E Don Kast feeds, observer partnerships, offline P2P | Roadmap slide only | — |
@@ -149,7 +150,7 @@ Serverless limits to know: uploaded photos go to a temp folder that does not per
 
 | Role | How you get it | Can open |
 |---|---|---|
-| Public | no account | `/` (landing + **Check a polling unit**), `/results` (**public results trail**), `/login`, `/register`, `/api/public/pu/<code>`, `/api/public/trail` |
+| Public | no account | `/` (**Trust Desk**: trace a result, check an image, send a private incident report), `/results` (**public results trail**), `/login`, `/register`, `/api/public/pu/<code>`, `/api/public/trail` |
 | **Witness** | choose *Witness* at sign-up, then confirm your phone with an SMS code | `/witness` — submit your polling unit's EC8A result (figures or photo), see the status of your polling units, your alerts, language/voice prefs |
 | **Observer** | choose *Observer* at sign-up (email + password; no phone needed) | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
 | **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, clear live activity) and `/phone` (field channels: SMS, USSD, WhatsApp) |
@@ -182,7 +183,7 @@ Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` 
 ## 3-minute walkthrough
 
 0. Before you start: sign in as **admin** (`admin@eri.vote`) — the field channels and the clear-activity control live there; use a second window as **observer** for the Proof Tree.
-1. **0:00 – 0:25** `/phone` → WhatsApp phone: send `pu034.png`. *"Did my polling unit's result survive the journey?"*
+1. **0:00 – 0:25** `/` → **Trust Desk**: try PU `034`, then check `pu034-forwarded.png`. The result trail explains the evidence in plain language; the image check says it does not match five witnesses. Show **Raise a concern**: reports are private and labelled unverified rather than becoming a rumour feed.
 2. **0:25 – 1:00** Party-agent phone: build & send the SMS for PU 017 (see `PRESENTER-NOTES.md`); WhatsApp-submit `pu017.png` / `pu029.png`. Sign in as the observer, open `/dashboard` and watch the Proof Tree fill.
 3. **1:00 – 1:50** `/ear` → play **Ward 04 collation**. PU 034 flags, then Ward 04 flashes red: *"announced A 3,120 … posted 1,880 … +1,240 unexplained."*
 4. **1:50 – 2:20** `/phone` → Amaka's phone buzzes (Igbo). Dial `*347*034#` → ALERT with the proof. (Switch to Tunde for the Yorùbá SMS + voice call.)
