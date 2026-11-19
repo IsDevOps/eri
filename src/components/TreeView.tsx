@@ -21,7 +21,7 @@ export function Pill({ status }: { status: Status }) {
   );
 }
 
-function TallyChips({ t, gap }: { t: Tally | null; gap?: Tally | null }) {
+export function TallyChips({ t, gap }: { t: Tally | null; gap?: Tally | null }) {
   if (!t) return <span className="text-xs text-slate-600">—</span>;
   return (
     <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-xs tabular-nums">

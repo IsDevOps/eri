@@ -9,8 +9,14 @@ export interface NavUser {
 }
 
 const LINKS: Record<Role | "guest", { href: string; label: string }[]> = {
-  guest: [{ href: "/", label: "Check a wall" }],
-  witness: [{ href: "/witness", label: "My walls" }],
+  guest: [
+    { href: "/", label: "Check a wall" },
+    { href: "/results", label: "Results trail" },
+  ],
+  witness: [
+    { href: "/witness", label: "My walls" },
+    { href: "/results", label: "Results trail" },
+  ],
   observer: [
     { href: "/dashboard", label: "Proof Tree" },
     { href: "/ear", label: "Live Ear" },
