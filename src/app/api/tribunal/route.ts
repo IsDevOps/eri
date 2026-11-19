@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import PDFDocument from "pdfkit";
-import { PARTIES, fmt, partyName, tallyKey, type Tally } from "@/lib/config";
+import { PARTIES, fmt, partyName, tallyText, type Tally } from "@/lib/config";
 import { q } from "@/lib/db";
 import { buildTree, walk, type TreeNode } from "@/lib/reconcile";
 
@@ -90,7 +90,7 @@ async function handle(req: Request) {
 
   if (scope.level === "ward") {
     h("Polling units in this ward");
-    for (const p of puList) line(`PU ${p.code}  EC8A ${tallyKey(p.expected ?? {}) || "none"}  |  read at ward ${p.readAtWard ? tallyKey(p.readAtWard) : p.dropped ? "DROPPED" : "n/a"}  |  ${p.status}  |  ${p.witnesses ?? 0} witnesses`);
+    for (const p of puList) line(`PU ${p.code}  EC8A ${p.expected ? tallyText(p.expected, " ") : "none"}  |  read at ward ${p.readAtWard ? tallyText(p.readAtWard, " ") : p.dropped ? "DROPPED" : "n/a"}  |  ${p.status}  |  ${p.witnesses ?? 0} witnesses`);
   }
 
   h("Collation events (what was announced, when, how captured)");

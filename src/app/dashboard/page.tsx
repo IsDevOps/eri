@@ -1,4 +1,5 @@
 "use client";
+import { wit } from "@/lib/plural";
 import { useMemo, useState } from "react";
 import { NodeDetail, TreeView } from "@/components/TreeView";
 import { usePoll } from "@/lib/client";
@@ -118,7 +119,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-red-300">
             <span>{KIND_LABEL[a.kind] ?? a.kind}</span>
-            <span>{a.notified} witnesses alerted</span>
+            <span>{wit(Number(a.notified))} alerted</span>
           </div>
 
           <p className="mt-1 text-sm text-slate-200">{a.message}</p>

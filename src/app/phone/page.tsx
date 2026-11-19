@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { LANGS, LANG_NAMES, USSD_CODE, SHORTCODE, partyName } from "@/lib/config";
+import { LANGS, LANG_NAMES, USSD_CODE, SHORTCODE, partyName, tallyText } from "@/lib/config";
 import { usePoll } from "@/lib/client";
 import { witVerb } from "@/lib/plural";
 
@@ -144,7 +144,7 @@ export default function Phones() {
     if (mode === "submit") {
       if (j.ok) {
         const t = j.reading.tally;
-        text = `✅ Read PU ${j.reading.puCode}: A ${t.A} · B ${t.B} · C ${t.C} · D ${t.D} (${Math.round(j.reading.confidence * 100)}% sure). ${witVerb(j.agree)}. No typing needed.`;
+        text = `✅ Read PU ${j.reading.puCode}: ${tallyText(t)} (${Math.round(j.reading.confidence * 100)}% sure). ${witVerb(j.agree)}. No typing needed.`;
       } else text = `⚠️ ${j.error}`;
     } else {
       text = (j.verdict === "genuine" ? "✅ " : j.verdict === "fake" ? "🚩 " : "ℹ️ ") + (j.message ?? j.error);
