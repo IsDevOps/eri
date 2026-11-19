@@ -12,13 +12,24 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getUser();
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("eri-theme");var d=t||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=d;document.documentElement.style.colorScheme=d}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full bg-[#0b0f14] text-slate-200">
-        <Nav user={user ? { name: user.name, role: user.role } : null} />
-        <Suspense>
-          <DeniedNotice />
-        </Suspense>
-        {children}
+        <div className="min-h-screen lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)]">
+          <Nav user={user ? { name: user.name, role: user.role } : null} />
+          <div className="min-w-0">
+            <Suspense>
+              <DeniedNotice />
+            </Suspense>
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );
