@@ -64,13 +64,10 @@ export default function Dashboard() {
     <main className="mx-auto max-w-7xl px-5 py-8">
       <section className="mb-8">
         <p className="text-sm uppercase tracking-widest text-sky-300">Every Vote, Every Voice</p>
-        <h1 className="mt-2 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
-          Did my polling unit’s result survive the journey?
-        </h1>
+        <h1 className="mt-2 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-4xl">Proof Tree</h1>
         <p className="mt-3 max-w-2xl text-slate-400">
-          Ẹ̀rí (Yorùbá: <em>witness, proof</em>) watches every hop between the polling-unit result (EC8A) and the final declaration (EC8E) — ward
-          (EC8B), LGA (EC8C), state (EC8D) — and tells the witnesses the moment a number changes. Click any figure to trace it to its
-          polling-unit results.
+          Every hop between the polling-unit result (EC8A) and the final declaration (EC8E) — ward (EC8B), LGA (EC8C), state (EC8D). Click any figure to trace it
+          down to the polling-unit results and the witnesses behind it.
         </p>
       </section>
 

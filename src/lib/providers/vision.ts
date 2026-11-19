@@ -91,5 +91,6 @@ export async function readSheet(img: Buffer, mime: string): Promise<SheetReading
   } catch {
     /* no manifest */
   }
-  throw new Error("This photo could not be read automatically. Set OPENAI_API_KEY (or ANTHROPIC_API_KEY), or send the figures by SMS.");
+  console.warn("No vision provider configured (set OPENAI_API_KEY or ANTHROPIC_API_KEY) and the photo is not a bundled sample.");
+  throw new Error("We couldn’t read this photo. Please enter the figures by hand, or try a clearer, flat, well-lit photo.");
 }

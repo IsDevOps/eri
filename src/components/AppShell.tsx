@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { Nav } from '@/components/Nav';
+import { PublicNavbar } from '@/components/NavBar';
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -14,7 +15,13 @@ export default function AppShell({ children, user }: AppShellProps) {
   const hideSidebar = ['/', '/login', '/register'].includes(pathname);
 
   if (hideSidebar) {
-    return <div className="min-h-screen">{children}</div>;
+    // The landing page renders its own bar (it knows who is signed in); sign-in and sign-up get the plain public bar.
+    return (
+      <div className="min-h-screen">
+        {pathname !== '/' && <PublicNavbar />}
+        {children}
+      </div>
+    );
   }
 
   return (

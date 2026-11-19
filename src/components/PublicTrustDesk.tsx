@@ -10,7 +10,7 @@ interface PuPublic {
   ward: string;
   witnesses: number;
   status: "verified" | "flagged" | "contested" | "unverified" | "pending";
-  wall: Record<string, number> | null;
+  ec8a: Record<string, number> | null;
   readAtWard: Record<string, number> | null;
   message: string;
 }
@@ -23,10 +23,10 @@ interface ImageVerdict {
 
 const statusCopy: Record<PuPublic["status"], { label: string; tone: string; detail: string }> = {
   verified: { label: "Matches at this hop", tone: "border-emerald-400/35 bg-emerald-400/10 text-emerald-100", detail: "The figures posted by witnesses match what was read at ward collation." },
-  flagged: { label: "A change was detected", tone: "border-rose-400/40 bg-rose-400/10 text-rose-100", detail: "The wall evidence and the announced figures do not match. Witnesses have been alerted." },
+  flagged: { label: "A change was detected", tone: "border-rose-400/40 bg-rose-400/10 text-rose-100", detail: "The witnessed EC8A results and the announced figures do not match. Witnesses have been alerted." },
   contested: { label: "Witnesses disagree", tone: "border-amber-300/40 bg-amber-300/10 text-amber-100", detail: "This needs more independent evidence before it can be treated as settled." },
   unverified: { label: "Evidence is still incomplete", tone: "border-amber-300/40 bg-amber-300/10 text-amber-100", detail: "Some evidence exists, but it cannot yet prove the full result trail." },
-  pending: { label: "Waiting for collation", tone: "border-sky-300/35 bg-sky-300/10 text-sky-100", detail: "The wall has been recorded; the next official announcement has not arrived." },
+  pending: { label: "Waiting for collation", tone: "border-sky-300/35 bg-sky-300/10 text-sky-100", detail: "The EC8A result has been recorded; the next official announcement has not arrived." },
 };
 
 const incidentTypes = [
@@ -132,7 +132,7 @@ export function PublicTrustDesk() {
 
       <div className="grid border-b border-white/10 sm:grid-cols-3">
         {([
-          ["lookup", "01", "Trace a result", "Check the polling-unit wall against the next hop."],
+          ["lookup", "01", "Trace a result", "Check the polling-unit result (EC8A) against the next hop."],
           ["verify", "02", "Check an image", "Test a forwarded result sheet against witness evidence."],
           ["report", "03", "Raise a concern", "Send a structured, private report for triage."],
         ] as const).map(([value, n, title, detail]) => (
@@ -160,7 +160,7 @@ export function PublicTrustDesk() {
                 <h3 className="font-semibold text-white">Trace a polling-unit result</h3>
                 <p className="mt-1 text-sm text-slate-400">Use the three-digit code on the EC8A result sheet. No account or phone number is needed.</p>
               </div>
-              <button type="button" onClick={() => { setCode("034"); void lookup(undefined, "034"); }} className="rounded-lg border border-sky-300/25 px-3 py-1.5 text-xs font-medium text-sky-200 hover:bg-sky-400/10">Try the live : 034</button>
+              <button type="button" onClick={() => { setCode("034"); void lookup(undefined, "034"); }} className="rounded-lg border border-sky-300/25 px-3 py-1.5 text-xs font-medium text-sky-200 hover:bg-sky-400/10">Try PU 034</button>
             </div>
             <form onSubmit={lookup} className="mt-5 flex flex-col gap-2 sm:flex-row">
               <label className="sr-only" htmlFor="pu-code">Polling-unit code</label>
@@ -233,7 +233,11 @@ export function PublicTrustDesk() {
 }
 
 function ResultTrail({ result, onVerify, onReport }: { result: PuPublic; onVerify: () => void; onReport: () => void }) {
-  const status = statusCopy[result.status];
+  // Until the ward is read out there is nothing to "match" yet; say what is actually known.
+  const status =
+    result.status === "verified" && !result.readAtWard
+      ? { label: "Witnesses agree", tone: statusCopy.verified.tone, detail: `${result.witnesses} witness${result.witnesses === 1 ? "" : "es"} posted the same EC8A figures. It has not been read out at ward collation yet.` }
+      : statusCopy[result.status];
   const wardState = result.readAtWard ? (result.status === "flagged" ? "Different figures detected" : "Figures read at ward") : "Awaiting ward collation";
   return (
     <article aria-live="polite" className={`eri-in mt-5 overflow-hidden rounded-2xl border ${status.tone}`}>
@@ -247,14 +251,14 @@ function ResultTrail({ result, onVerify, onReport }: { result: PuPublic; onVerif
       <div className="p-4 sm:p-5">
         <p className="text-sm leading-relaxed opacity-85">{status.detail}</p>
         <ol className="mt-4 grid gap-2 sm:grid-cols-3">
-          <TrailStep n="1" label="Wall evidence" value={result.wall ? `${result.witnesses} witness posts` : "No wall posted yet"} done={!!result.wall} />
+          <TrailStep n="1" label="EC8A evidence" value={result.ec8a ? `${result.witnesses} witness posts` : "No EC8A result posted yet"} done={!!result.ec8a} />
           <TrailStep n="2" label="Ward collation" value={wardState} done={!!result.readAtWard} alert={result.status === "flagged"} />
           <TrailStep n="3" label="Next announcement" value="Continues as results move up" />
         </ol>
-        {result.wall && <div className="mt-4 rounded-xl bg-black/15 p-3">
-          <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] opacity-65"><span>Figures on the wall</span><span>Votes</span></div>
+        {result.ec8a && <div className="mt-4 rounded-xl bg-black/15 p-3">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] opacity-65"><span>Figures on the EC8A</span><span>Votes</span></div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono text-sm tabular-nums sm:grid-cols-4">
-            {PARTIES.map((party) => <span key={party} className="flex justify-between gap-3"><span className="opacity-65">{party}</span><span>{fmt(result.wall?.[party] ?? 0)}</span></span>)}
+            {PARTIES.map((party) => <span key={party} className="flex justify-between gap-3"><span className="opacity-65">{party}</span><span>{fmt(result.ec8a?.[party] ?? 0)}</span></span>)}
           </div>
         </div>}
         <p className="mt-3 text-xs leading-relaxed opacity-70">{result.message}</p>

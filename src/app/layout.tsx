@@ -7,7 +7,7 @@ import "./globals.css";
 import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "Ẹ̀rí — Evidence from the wall to the final result",
+  title: "Ẹ̀rí — Trace every vote from the polling unit to the declaration",
   description:
     "Trace polling-unit evidence, check forwarded result sheets, and report election-day concerns safely.",
 };

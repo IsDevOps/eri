@@ -169,7 +169,7 @@ export default function Phones() {
     <main className="mx-auto max-w-7xl px-5 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm uppercase tracking-widest text-sky-300">Signature features 3, 4 &amp; 5</p>
+          <p className="text-sm uppercase tracking-widest text-sky-300">Field channels</p>
           <h1 className="mt-1 text-3xl font-semibold text-white">Works on any phone, any network</h1>
           <p className="mt-2 max-w-3xl text-slate-400">
             Field channels: SMS to shortcode {SHORTCODE} over 2G, a USSD check, and a WhatsApp bot that

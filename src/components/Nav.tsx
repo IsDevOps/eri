@@ -5,7 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Role = "admin" | "observer" | "witness";
-type NavIcon = "wall" | "tree" | "ear" | "admin" | "phone";
+type NavIcon = "wall" | "tree" | "ear" | "admin" | "phone" | "trail";
 
 interface NavLink {
   href: string;
@@ -19,18 +19,22 @@ export interface NavUser {
   role: Role;
 }
 
+const TRAIL: NavLink = { href: "/results", label: "Results trail", icon: "trail", hint: "What was announced, hop by hop" };
+
 const LINKS: Record<Role | "guest", NavLink[]> = {
-  guest: [{ href: "/", label: "Trust desk", icon: "wall", hint: "Check a wall or report a concern" }],
-  witness: [{ href: "/witness", label: "My wall evidence", icon: "wall", hint: "Submit and follow your result" }],
+  guest: [{ href: "/", label: "Trust desk", icon: "wall", hint: "Check a result or report a concern" }, TRAIL],
+  witness: [{ href: "/witness", label: "My polling units", icon: "wall", hint: "Submit and follow your result" }, TRAIL],
   observer: [
     { href: "/dashboard", label: "Proof Tree", icon: "tree", hint: "Trace every collation hop" },
     { href: "/ear", label: "Live Ear", icon: "ear", hint: "Listen and reconcile live" },
+    TRAIL,
   ],
   admin: [
     { href: "/admin", label: "Administration", icon: "admin", hint: "Accounts controls" },
     { href: "/dashboard", label: "Proof Tree", icon: "tree", hint: "Trace every collation hop" },
     { href: "/ear", label: "Live Ear", icon: "ear", hint: "Listen and reconcile live" },
     { href: "/phone", label: "Field channels", icon: "phone", hint: "SMS, USSD and WhatsApp" },
+    TRAIL,
   ],
 };
 
@@ -47,8 +51,9 @@ function Mark() {
 function NavGlyph({ icon }: { icon: NavIcon }) {
   const shared = "h-[18px] w-[18px] fill-none stroke-current stroke-[1.8]";
   if (icon === "tree") return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><circle cx="12" cy="5" r="2" /><circle cx="6" cy="18" r="2" /><circle cx="18" cy="18" r="2" /><path d="M12 7v4M6 16v-2h12v2M12 11v3" /></svg>;
-  if (icon === "ear") return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><path d="M7 11.5a5 5 0 1 1 10 0c0 3-2.2 3.5-2.8 5.5-.3 1-.6 2-2.2 2-1.2 0-2-.8-2-2" /><path d="M11 22h2" /></svg>;
+  if (icon === "ear") return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M9 21h6" /></svg>;
   if (icon === "admin") return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" /><circle cx="12" cy="12" r="3" /></svg>;
+  if (icon === "trail") return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><path d="M4 18h4l3-6 3 3 6-9" /><circle cx="19" cy="6" r="1.5" /></svg>;
   if (icon === "phone") return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><rect x="6" y="2.5" width="12" height="19" rx="2" /><path d="M10 18.5h4M9 5.5h6" /></svg>;
   return <svg aria-hidden="true" viewBox="0 0 24 24" className={shared}><path d="M4 4.5h16v15H4z" /><path d="M7 8h10M7 12h5M7 16h7" /></svg>;
 }
@@ -176,7 +181,7 @@ export function Nav({ user }: { user: NavUser | null }) {
           </div>
 
           <div className="mb-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.055] p-3">
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />  live</div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" /> Live · Eriwa LGA</div>
           </div>
 
           <nav id="primary-navigation" aria-label="Primary navigation">
@@ -204,7 +209,7 @@ export function Nav({ user }: { user: NavUser | null }) {
           {!user && (
             <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
               <p className="text-sm font-semibold text-white">Witness what you saw.</p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-400">Submit a wall, get an alert if it changes, and choose your language.</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-400">Submit your EC8A result, get an alert if it changes, and choose your language.</p>
               <Link href="/register" onClick={closeDrawer} className="mt-3 flex min-h-10 items-center justify-center rounded-lg bg-sky-300 px-3 text-xs font-semibold text-slate-950 transition hover:bg-sky-200">Create an account</Link>
               <Link href="/login" onClick={closeDrawer} className="mt-2 flex min-h-9 items-center justify-center rounded-lg text-xs font-semibold text-slate-300 hover:bg-white/5 hover:text-white">Sign in</Link>
             </div>

@@ -215,7 +215,7 @@ export default function LiveEar() {
 
   return (
     <main className="mx-auto max-w-7xl px-5 py-8">
-      <p className="text-sm uppercase tracking-widest text-sky-300">Signature feature 1</p>
+      <p className="text-sm uppercase tracking-widest text-sky-300">Collation centre</p>
       <h1 className="mt-1 text-3xl font-semibold text-white">Live Ear — the collation centre, checked in real time</h1>
       <p className="mt-2 max-w-3xl text-slate-400">
         Collation officers read results aloud at each collation centre (ward EC8B, LGA EC8C, state EC8D). Ẹ̀rí listens, transcribes, pulls out the figures per ward or LGA and compares them with the
@@ -240,12 +240,13 @@ export default function LiveEar() {
               ))}
               {!clips.length && <p className="text-sm text-slate-500">No recordings yet. Run <code>npm run seed</code>.</p>}
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-4 space-y-2">
+              <div className="flex flex-wrap items-stretch gap-2">
               <button
                 onClick={toggleSpeech}
                 disabled={!canSpeech || recording}
                 title={canSpeech ? "Uses your browser's speech recognition — no API key needed" : "This browser has no speech recognition. Use Chrome or Edge."}
-                className={`rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-40 ${listening ? "animate-pulse bg-red-500 text-white" : "bg-sky-500/20 text-sky-200 hover:bg-sky-500/30"}`}
+                className={`min-h-10 flex-1 rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-40 ${listening ? "animate-pulse bg-red-500 text-white" : "bg-sky-500/20 text-sky-200 hover:bg-sky-500/30"}`}
               >
                 {listening ? "● Listening… tap to stop" : "🎙 Listen live (browser, free)"}
               </button>
@@ -254,7 +255,7 @@ export default function LiveEar() {
                 onChange={(e) => setLang(e.target.value)}
                 disabled={listening}
                 aria-label="Speech language"
-                className="rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-slate-200 disabled:opacity-40"
+                className="min-h-10 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-slate-200 disabled:opacity-40"
               >
                 {SPEECH_LANGS.map((l) => (
                   <option key={l.code} value={l.code}>
@@ -262,6 +263,8 @@ export default function LiveEar() {
                   </option>
                 ))}
               </select>
+              </div>
+              <div className="flex flex-wrap gap-2">
               <button
                 onClick={toggleMic}
                 disabled={listening}
@@ -273,6 +276,7 @@ export default function LiveEar() {
                 Upload audio
                 <input type="file" accept="audio/*" hidden onChange={(e) => e.target.files?.[0] && uploadAudio(e.target.files[0])} />
               </label>
+              </div>
             </div>
             <div className="mt-4">
               <label className="text-[11px] uppercase tracking-wide text-slate-500">Or paste what was announced</label>

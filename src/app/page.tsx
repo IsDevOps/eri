@@ -11,14 +11,14 @@ export default async function Landing() {
   );
   return (
 <>
-       <PublicNavbar />
+       <PublicNavbar user={u ? { name: u.name, home: HOME[u.role] } : null} />
     <main className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
       <section className="grid items-end gap-8 lg:grid-cols-[1fr_300px]">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-sky-200"><span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> Every vote, every voice</div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.03] tracking-tight text-white sm:text-6xl">Did the result on your wall survive the journey?</h1>
+          <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.03] tracking-tight text-white sm:text-6xl">Did my polling unit’s result survive the journey?</h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
-            Ẹ̀rí (Yorùbá: <em>witness, proof</em>) turns a photo on a polling-unit wall into a traceable public record. It checks each hand-off, alerts witnesses when numbers move, and separates evidence from rumours.
+            Ẹ̀rí (Yorùbá: <em>witness, proof</em>) turns a photo of the polling-unit result sheet (EC8A) into a traceable public record. It checks each hand-off, alerts witnesses when numbers move, and separates evidence from rumours.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
           {u ? (
@@ -36,7 +36,7 @@ export default async function Landing() {
         <aside className="rounded-3xl border border-white/10 bg-[#121a25] p-5 shadow-xl shadow-black/20">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Live Coverage</p>
           <p className="mt-3 text-4xl font-semibold tracking-tight text-white"><span className="text-emerald-300">{s?.witnessed}</span>/{s?.pus}</p>
-          <p className="mt-1 text-sm text-slate-400">polling-unit walls independently witnessed</p>
+          <p className="mt-1 text-sm text-slate-400">polling units independently witnessed</p>
           <div className="my-5 h-px bg-white/10" />
           <p className="text-sm leading-relaxed text-slate-300">A result only earns confidence when its trail is visible—not when it is forwarded the most.</p>
           <p className="mt-4 text-xs text-slate-500"> Eriwa LGA  · neutral party codes A–D</p>

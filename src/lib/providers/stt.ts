@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { openaiUrl } from "./openai";
 
 /**
  * Speech-to-text provider.
@@ -18,12 +19,15 @@ export async function transcribe(audio: Buffer, filename: string, mime: string):
     const form = new FormData();
     form.set("file", new Blob([new Uint8Array(audio)], { type: mime }), filename);
     form.set("model", "whisper-1");
-    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const res = await fetch(openaiUrl("/audio/transcriptions"), {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       body: form,
     });
-    if (!res.ok) throw new Error(`STT failed: ${res.status}`);
+    if (!res.ok) {
+      console.error(`OpenAI transcription failed: ${res.status}`);
+      throw new Error("Transcription is unavailable right now. Paste the announcement text instead.");
+    }
     const json = (await res.json()) as { text: string };
     return { text: json.text, engine: "openai" };
   }
@@ -38,6 +42,6 @@ export async function transcribe(audio: Buffer, filename: string, mime: string):
     /* no manifest */
   }
   throw new Error(
-    "No speech-to-text provider configured and this audio could not be transcribed here. Set OPENAI_API_KEY or paste the transcript.",
+    "This audio could not be transcribed. Paste the announcement text instead.",
   );
 }
