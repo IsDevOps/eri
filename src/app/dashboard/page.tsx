@@ -82,7 +82,7 @@ export default function Dashboard() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-        <section className="rounded-xl border border-white/10 bg-[#0f141b] p-4">
+        <section className="rounded-xl border border-white/10 bg-[#0f141b] p-4 h-0 lg:h-[600px] overflow-auto">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Proof Tree</h2>
             <span className="text-xs text-slate-500">state → LGA → ward → polling unit → witness photos</span>
@@ -94,27 +94,42 @@ export default function Dashboard() {
           )}
         </section>
 
-        <aside className="space-y-5">
-          {selected && <NodeDetail node={selected.node} path={selected.path} />}
-          <section className="rounded-xl border border-white/10 bg-[#121821] p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Witness alarms</h2>
-              <span className="text-xs text-slate-500">{alerts?.length ?? 0} raised</span>
-            </div>
-            {!alerts?.length && <p className="text-sm text-slate-500">All quiet. Play a collation clip on the Live Ear page.</p>}
-            <ul className="space-y-2">
-              {alerts?.map((a) => (
-                <li key={a.id} className="eri-in rounded-lg border border-red-500/30 bg-red-500/10 p-3">
-                  <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-red-300">
-                    <span>{KIND_LABEL[a.kind] ?? a.kind}</span>
-                    <span>{a.notified} witnesses alerted</span>
-                  </div>
-                  <p className="mt-1 text-sm text-slate-200">{a.message}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </aside>
+       <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
+  {selected && <NodeDetail node={selected.node} path={selected.path} />}
+
+  <section className="rounded-xl border border-white/10 bg-[#121821] p-4">
+    <div className="mb-3 flex items-center justify-between">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+        Witness alarms
+      </h2>
+      <span className="text-xs text-slate-500">
+        {alerts?.length ?? 0} raised
+      </span>
+    </div>
+
+    {!alerts?.length && (
+      <p className="text-sm text-slate-500">
+        All quiet. Play a collation clip on the Live Ear page.
+      </p>
+    )}
+
+    <ul className="space-y-2">
+      {alerts?.map((a) => (
+        <li
+          key={a.id}
+          className="eri-in rounded-lg border border-red-500/30 bg-red-500/10 p-3"
+        >
+          <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-red-300">
+            <span>{KIND_LABEL[a.kind] ?? a.kind}</span>
+            <span>{a.notified} witnesses alerted</span>
+          </div>
+
+          <p className="mt-1 text-sm text-slate-200">{a.message}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+</aside>
       </div>
     </main>
   );

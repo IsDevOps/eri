@@ -1,28 +1,35 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { DeniedNotice, Nav } from "@/components/Nav";
 import { getUser } from "@/lib/auth";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Ẹ̀rí — Trace every vote from the polling unit to the declaration",
-  description: "Watch the collation hops between the polling-unit result (EC8A) and the final declaration (EC8E), and alert citizens when their numbers change.",
+  title: "Ẹ̀rí — Evidence from the wall to the final result",
+  description: "Trace polling-unit evidence, check forwarded result sheets, and report election-day concerns safely.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getUser();
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("eri-theme");var d=t||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=d;document.documentElement.style.colorScheme=d}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full bg-[#0b0f14] text-slate-200">
-        <Nav user={user ? { name: user.name, role: user.role } : null} />
-        <Suspense>
-          <DeniedNotice />
-        </Suspense>
-        {children}
+        <div className="min-h-screen lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)]">
+          <Nav user={user ? { name: user.name, role: user.role } : null} />
+          <div className="min-w-0">
+            <Suspense>
+              <DeniedNotice />
+            </Suspense>
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );
