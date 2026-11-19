@@ -27,7 +27,7 @@ const LINKS: Record<Role | "guest", NavLink[]> = {
     { href: "/ear", label: "Live Ear", icon: "ear", hint: "Listen and reconcile live" },
   ],
   admin: [
-    { href: "/admin", label: "Administration", icon: "admin", hint: "Accounts and demo controls" },
+    { href: "/admin", label: "Administration", icon: "admin", hint: "Accounts controls" },
     { href: "/dashboard", label: "Proof Tree", icon: "tree", hint: "Trace every collation hop" },
     { href: "/ear", label: "Live Ear", icon: "ear", hint: "Listen and reconcile live" },
     { href: "/phone", label: "Phone simulators", icon: "phone", hint: "SMS, USSD and WhatsApp" },
@@ -177,7 +177,7 @@ export function Nav({ user }: { user: NavUser | null }) {
 
           <div className="mb-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.055] p-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />  live</div>
-            <p className="mt-1.5 text-xs leading-relaxed text-slate-400">Made-up data only. Evidence states update as the demo moves.</p>
+            {/* <p className="mt-1.5 text-xs leading-relaxed text-slate-400">Made-up data only. Evidence states update as the demo moves.</p> */}
           </div>
 
           <nav id="primary-navigation" aria-label="Primary navigation">

@@ -117,7 +117,7 @@ async function main() {
 
   const pus = buildPUs();
   console.log("→ geography");
-  const lga = (await q<{ id: number }>("insert into lga (code, name, state) values ('ERW','Eriwa','Demo State') returning id"))[0];
+  const lga = (await q<{ id: number }>("insert into lga (code, name, state) values ('ERW','Eriwa',' State') returning id"))[0];
   const wardIds: Record<number, number> = {};
   for (let w = 1; w <= 4; w++) {
     wardIds[w] = (

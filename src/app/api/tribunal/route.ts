@@ -74,7 +74,7 @@ async function handle(req: Request) {
   line("Eri evidence pack");
   doc.fontSize(10).font("Helvetica").fillColor("#555");
   line("Eri (Yoruba: witness, proof) - trace every vote from the polling unit to the declaration");
-  line(`Generated ${new Date().toISOString()}  -  SYNTHETIC DEMO DATA (Eriwa LGA, Demo State)`);
+  line(`Generated ${new Date().toISOString()}  -  SYNTHETIC DEMO DATA (Eriwa LGA,  State)`);
   doc.fontSize(9.5).fillColor("#222");
 
   h(`Scope: ${scope.label}${wardNode ? ` (${(wardNode as TreeNode).label.split(" · ")[0]})` : ""}`);
