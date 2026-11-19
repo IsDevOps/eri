@@ -63,14 +63,14 @@ export function LoginForm({ demo, demoPassword }: { demo: boolean; demoPassword:
 
       {demo && (
         <aside className="space-y-2 rounded-xl border border-amber-400/20 bg-amber-400/5 p-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-amber-300">Demo accounts (synthetic environment)</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-amber-300">Accounts</h2>
           {DEMO.map((d) => (
             <button key={d.email} disabled={busy} onClick={() => submit(d.email, demoPassword)} className="block w-full rounded-lg border border-white/10 bg-[#121821] px-3 py-2 text-left hover:border-sky-400 disabled:opacity-50">
               <span className="block text-sm text-white">{d.label}</span>
               <span className="block text-xs text-slate-500">{d.note}</span>
             </button>
           ))}
-          <p className="text-[11px] text-slate-500">Quick-login buttons only appear while DEMO_LOGINS=1. Turn it off for any real deployment.</p>
+          {/* <p className="text-[11px] text-slate-500">Quick-login buttons only appear while DEMO_LOGINS=1. Turn it off for any real deployment.</p> */}
         </aside>
       )}
     </div>
