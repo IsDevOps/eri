@@ -5,8 +5,8 @@ import type { PublicTrail, TrailRow } from "@/lib/public-trail";
 
 const LEVEL_LABEL: Record<TrailRow["level"], string> = {
   state: "State · EC8D",
-  lga: "LGA · EC8C",
-  ward: "Ward · EC8B",
+  lga: "Local Government Area · EC8C",
+  ward: "Ward (Registration Area) · EC8B",
 };
 
 function Row({ r }: { r: TrailRow }) {
@@ -21,7 +21,7 @@ function Row({ r }: { r: TrailRow }) {
         <h3 className="font-medium text-white">{r.label}</h3>
         <Pill status={r.status} />
         <span className="ml-auto text-xs text-slate-500">
-          {r.walls.witnessed}/{r.walls.total} walls witnessed
+          {r.coverage.witnessed}/{r.coverage.total} polling units witnessed
         </span>
       </div>
       <p className={`mt-1 text-sm ${bad ? "text-red-200" : "text-slate-300"}`}>{r.headline}</p>
@@ -36,7 +36,7 @@ function Row({ r }: { r: TrailRow }) {
           </div>
           <div>
             <dt className="text-[11px] uppercase tracking-wide text-slate-500">
-              {r.level === "ward" ? "Sum of witnessed walls" : r.level === "lga" ? "Sum of announced wards" : "Sum of announced LGAs"}
+              {r.level === "ward" ? "Sum of witnessed EC8A results" : r.level === "lga" ? "Sum of announced wards" : "Sum of announced LGAs"}
             </dt>
             <dd className="mt-1">
               <TallyChips t={r.checkedAgainst} />
@@ -56,11 +56,11 @@ export default function Results() {
   return (
     <main className="mx-auto max-w-5xl px-5 py-10">
       <p className="text-sm uppercase tracking-widest text-sky-300">Results trail</p>
-      <h1 className="mt-2 text-3xl font-semibold text-white">What was announced, and does it trace to the walls?</h1>
+      <h1 className="mt-2 text-3xl font-semibold text-white">What was announced, and does it trace to the polling-unit results?</h1>
 
       <div role="note" className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
         {data?.disclaimer ??
-          "Unofficial. This page shows what was announced at each collation hop and whether it traces to polling-unit walls that citizens witnessed. It is not a result and does not predict one. INEC declares the official result."}
+          "Unofficial. This page shows what was announced at each collation hop and whether it traces to polling-unit results (Form EC8A) that citizens witnessed. It is not a result and does not predict one. INEC declares the official result."}
       </div>
 
       {!data ? (
@@ -70,9 +70,9 @@ export default function Results() {
           <section className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
             {[
               ["Hops announced", String(data.summary.announcedHops)],
-              ["Traced to walls", String(data.summary.tracedHops)],
+              ["Traced to EC8A", String(data.summary.tracedHops)],
               ["Flagged", String(data.summary.flaggedHops)],
-              ["Walls witnessed", `${data.summary.walls.witnessed}/${data.summary.walls.total}`],
+              ["Polling units witnessed", `${data.summary.pollingUnits.witnessed}/${data.summary.pollingUnits.total}`],
             ].map(([k, v]) => (
               <div key={k} className="rounded-xl border border-white/10 bg-[#121821] p-4">
                 <div className="text-[11px] uppercase tracking-wide text-slate-500">{k}</div>

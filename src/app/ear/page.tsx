@@ -177,7 +177,7 @@ export default function LiveEar() {
       <p className="text-sm uppercase tracking-widest text-sky-300">Signature feature 1</p>
       <h1 className="mt-1 text-3xl font-semibold text-white">Live Ear — the collation centre, checked in real time</h1>
       <p className="mt-2 max-w-3xl text-slate-400">
-        Returning officers read results aloud. Ẹ̀rí listens, transcribes, pulls out the figures per ward or LGA and compares them with the
+        Collation officers read results aloud at each collation centre (ward EC8B, LGA EC8C, state EC8D). Ẹ̀rí listens, transcribes, pulls out the figures per ward or LGA and compares them with the
         polling-unit totals the witnesses already posted. Play a clip, record from the room, or upload audio.
       </p>
 
@@ -266,7 +266,7 @@ export default function LiveEar() {
                     ))}
                     <div className="flex justify-between text-slate-400">
                       <span>Posted by {w.coverage.witnessed} PUs</span>
-                      <span className="text-slate-200">{fmt(w.wallSum.A ?? 0)}</span>
+                      <span className="text-slate-200">{fmt(w.witnessedSum.A ?? 0)}</span>
                     </div>
                     {w.gap && w.gap.A ? (
                       <div className={`flex justify-between font-semibold ${w.status === "flagged" ? "text-red-300" : "text-amber-300"}`}>

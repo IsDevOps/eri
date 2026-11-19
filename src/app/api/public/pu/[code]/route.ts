@@ -15,7 +15,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ code: string }>
     ward: n.wardLabel,
     witnesses: n.witnesses ?? 0,
     status: n.status,
-    wall: n.expected,
+    ec8a: n.expected,
     readAtWard: n.readAtWard ?? null,
     message: await ussdCheck(pu, "en"),
   });

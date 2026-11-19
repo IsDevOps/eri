@@ -65,18 +65,18 @@ export default function Dashboard() {
       <section className="mb-8">
         <p className="text-sm uppercase tracking-widest text-sky-300">Every Vote, Every Voice</p>
         <h1 className="mt-2 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
-          Did my wall survive the journey?
+          Did my polling unit’s result survive the journey?
         </h1>
         <p className="mt-3 max-w-2xl text-slate-400">
-          Ẹ̀rí (Yorùbá: <em>witness, proof</em>) watches every hop between the polling-unit wall and the final announcement — ward
+          Ẹ̀rí (Yorùbá: <em>witness, proof</em>) watches every hop between the polling-unit result (EC8A) and the final declaration (EC8E) — ward
           (EC8B), LGA (EC8C), state (EC8D) — and tells the witnesses the moment a number changes. Click any figure to trace it to its
-          walls.
+          polling-unit results.
         </p>
       </section>
 
       <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Polling units" value={stats.pus} />
-        <Stat label="Walls witnessed" value={`${stats.witnessed}/${stats.pus}`} />
+        <Stat label="Polling units witnessed" value={`${stats.witnessed}/${stats.pus}`} />
         <Stat label="Hops traced" value={stats.verified} tone="ok" />
         <Stat label="Hops flagged" value={stats.flagged} tone={stats.flagged ? "bad" : "dim"} />
       </section>

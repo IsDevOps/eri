@@ -9,8 +9,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Ẹ̀rí — Trace every vote from the wall to the winner",
-  description: "Watch the collation hops between the polling-unit wall and the final announcement, and alert citizens when their numbers change.",
+  title: "Ẹ̀rí — Trace every vote from the polling unit to the declaration",
+  description: "Watch the collation hops between the polling-unit result (EC8A) and the final declaration (EC8E), and alert citizens when their numbers change.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

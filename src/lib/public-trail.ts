@@ -5,13 +5,13 @@ import type { Status, TreeNode } from "./reconcile";
  * Public, read-only view of the collation trail.
  *
  * What it shows: for each hop (ward, LGA, state) the figure that was announced, what that figure was checked
- * against, and whether it traces to the polling-unit walls witnessed so far.
+ * against, and whether it traces to the polling-unit results (Form EC8A) witnessed so far.
  * What it deliberately does NOT do: rank parties, label anyone as leading or winning, or extrapolate from partial
  * witness coverage. Only INEC declares results. Polling-unit rows, phone numbers and photos are never included.
  */
 export const TRAIL_DISCLAIMER =
-  "Unofficial. This page shows what was announced at each collation hop and whether it traces to polling-unit walls " +
-  "that citizens witnessed. It is not a result and does not predict one. INEC declares the official result.";
+  "Unofficial. This page shows what was announced at each collation hop and whether it traces to polling-unit results " +
+  "(Form EC8A) that citizens witnessed. It is not a result and does not predict one. INEC declares the official result.";
 
 export interface TrailRow {
   id: string;
@@ -19,13 +19,13 @@ export interface TrailRow {
   depth: number;
   label: string;
   announced: Tally | null;
-  /** Ward: sum of witnessed walls. LGA / state: sum of the announced hops directly below. */
+  /** Ward (EC8B): sum of witnessed polling-unit EC8A results. LGA / state: sum of the announced hops directly below. */
   checkedAgainst: Tally | null;
   gap: Tally | null;
   status: Status;
   headline: string;
   reason: string;
-  walls: { witnessed: number; total: number };
+  coverage: { witnessed: number; total: number };
   flaggedBelow: number;
 }
 
@@ -36,14 +36,14 @@ export interface PublicTrail {
     announcedHops: number;
     tracedHops: number;
     flaggedHops: number;
-    walls: { witnessed: number; total: number };
+    pollingUnits: { witnessed: number; total: number };
   };
   rows: TrailRow[];
 }
 
 const HEADLINE: Record<Status, string> = {
-  verified: "Matches the witnessed walls",
-  flagged: "Does not trace to the witnessed walls",
+  verified: "Matches the witnessed EC8A results",
+  flagged: "Does not trace to the witnessed EC8A results",
   contested: "Witnesses disagree",
   unverified: "Not enough witnesses to confirm",
   pending: "Not announced yet",
@@ -64,7 +64,7 @@ export function toPublicTrail(root: TreeNode, now: Date = new Date()): PublicTra
       status: n.status,
       headline: HEADLINE[n.status],
       reason: n.reason,
-      walls: n.coverage,
+      coverage: n.coverage,
       flaggedBelow: n.flaggedBelow,
     });
     n.children.forEach((c) => visit(c, depth + 1));
@@ -79,7 +79,7 @@ export function toPublicTrail(root: TreeNode, now: Date = new Date()): PublicTra
       announcedHops: announced.length,
       tracedHops: announced.filter((r) => r.status === "verified").length,
       flaggedHops: rows.filter((r) => r.status === "flagged").length,
-      walls: root.coverage,
+      pollingUnits: root.coverage,
     },
     rows,
   };

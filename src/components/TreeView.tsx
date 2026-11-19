@@ -114,7 +114,7 @@ export function TreeView({
               <span className={`truncate text-sm ${n.level === "pu" ? "font-mono text-slate-300" : "font-medium text-white"}`}>{n.label}</span>
               {n.level !== "pu" && (
                 <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-400">
-                  {n.coverage.witnessed}/{n.coverage.total} walls
+                  {n.coverage.witnessed}/{n.coverage.total} PUs witnessed
                 </span>
               )}
               {n.level === "pu" && !!n.witnesses && (
@@ -166,7 +166,7 @@ export function NodeDetail({ node, path }: { node: TreeNode; path: TreeNode[] })
           <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
             <th className="py-1 font-medium">Party</th>
             <th className="py-1 text-right font-medium">{node.level === "pu" ? "Read at ward" : "Announced"}</th>
-            <th className="py-1 text-right font-medium">{node.level === "pu" ? "Wall (witnesses)" : "Proof below"}</th>
+            <th className="py-1 text-right font-medium">{node.level === "pu" ? "EC8A (witnesses)" : "Proof below"}</th>
             <th className="py-1 text-right font-medium">Gap</th>
           </tr>
         </thead>
@@ -205,7 +205,7 @@ export function NodeDetail({ node, path }: { node: TreeNode; path: TreeNode[] })
       )}
       {node.level !== "pu" && (
         <p className="mt-3 text-xs text-slate-500">
-          Traces down to {node.coverage.witnessed} witnessed wall{node.coverage.witnessed === 1 ? "" : "s"} of {node.coverage.total}.
+          Traces down to {node.coverage.witnessed} of {node.coverage.total} polling-unit EC8A results witnessed by citizens.
           {node.level === "ward" && node.unwitnessedCapacity ? ` Unwitnessed PUs could account for at most ${fmt(node.unwitnessedCapacity)} votes.` : ""}
         </p>
       )}

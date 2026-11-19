@@ -51,7 +51,7 @@ test("an inflated ward is reported as not tracing, and counted", () => {
   const trail = toPublicTrail(buildTreeFromRows(r));
   const ward = trail.rows.find((x) => x.level === "ward");
   assert.equal(ward?.status, "flagged");
-  assert.equal(ward?.headline, "Does not trace to the witnessed walls");
+  assert.equal(ward?.headline, "Does not trace to the witnessed EC8A results");
   assert.equal(trail.summary.flaggedHops, 1);
   assert.equal(trail.summary.announcedHops, 1);
   assert.equal(trail.summary.tracedHops, 0);
@@ -61,5 +61,5 @@ test("before any announcement every hop says it is not announced yet", () => {
   const trail = toPublicTrail(buildTreeFromRows(rows()));
   assert.ok(trail.rows.every((x) => x.headline === "Not announced yet"));
   assert.equal(trail.summary.announcedHops, 0);
-  assert.deepEqual(trail.summary.walls, { witnessed: 1, total: 2 });
+  assert.deepEqual(trail.summary.pollingUnits, { witnessed: 1, total: 2 });
 });

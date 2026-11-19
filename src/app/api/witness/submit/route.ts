@@ -3,7 +3,7 @@ import { PARTIES, type Tally } from "@/lib/config";
 import { json } from "@/lib/http";
 import { submitResult } from "@/lib/services";
 
-// A signed-in, phone-verified witness submits the figures on the EC8A wall sheet. The identity is the session, never a client-supplied phone.
+// A signed-in, phone-verified witness submits the figures on the EC8A result sheet. The identity is the session, never a client-supplied phone.
 export const POST = guard(["witness"], async (req, _ctx, user) => {
   if (!user.phone || !user.phoneVerified) return json({ ok: false, error: "Verify your phone number before submitting results." }, 403);
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;

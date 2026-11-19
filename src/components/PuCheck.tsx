@@ -7,7 +7,7 @@ interface PuPublic {
   ward: string;
   witnesses: number;
   status: string;
-  wall: Record<string, number> | null;
+  ec8a: Record<string, number> | null;
   readAtWard: Record<string, number> | null;
   message: string;
 }
@@ -60,9 +60,9 @@ export function PuCheck() {
             PU {res.code} · {res.ward} · {res.witnesses} witness{res.witnesses === 1 ? "" : "es"} · {res.status}
           </div>
           <p className="mt-2 text-sm">{res.message}</p>
-          {res.wall && res.witnesses > 0 && (
+          {res.ec8a && res.witnesses > 0 && (
             <p className="mt-2 font-mono text-xs opacity-80">
-              Wall: {PARTIES.map((p) => `${p} ${fmt(res.wall![p] ?? 0)}`).join("  ")}
+              Witnessed EC8A: {PARTIES.map((p) => `${p} ${fmt(res.ec8a![p] ?? 0)}`).join("  ")}
               {res.readAtWard && <> · Read at ward: {PARTIES.map((p) => `${p} ${fmt(res.readAtWard![p] ?? 0)}`).join("  ")}</>}
             </p>
           )}
