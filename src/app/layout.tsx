@@ -1,16 +1,22 @@
+
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { DeniedNotice, Nav } from "@/components/Nav";
+import { DeniedNotice } from "@/components/Nav";
 import { getUser } from "@/lib/auth";
 import "./globals.css";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Ẹ̀rí — Evidence from the wall to the final result",
-  description: "Trace polling-unit evidence, check forwarded result sheets, and report election-day concerns safely.",
+  description:
+    "Trace polling-unit evidence, check forwarded result sheets, and report election-day concerns safely.",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({
+  children,
+}: LayoutProps<"/">) {
   const user = await getUser();
+
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <head>
@@ -20,16 +26,17 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
       </head>
+
       <body className="min-h-full bg-[#0b0f14] text-slate-200">
-        <div className="min-h-screen lg:grid lg:grid-cols-[17.5rem_minmax(0,1fr)]">
-          <Nav user={user ? { name: user.name, role: user.role } : null} />
-          <div className="min-w-0">
-            <Suspense>
-              <DeniedNotice />
-            </Suspense>
-            {children}
-          </div>
-        </div>
+        <Suspense>
+          <DeniedNotice />
+        </Suspense>
+
+        <AppShell
+          user={user ? { name: user.name, role: user.role } : null}
+        >
+          {children}
+        </AppShell>
       </body>
     </html>
   );
