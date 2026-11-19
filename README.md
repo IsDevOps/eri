@@ -34,6 +34,7 @@ Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md`
 | Plan item | Status | Where |
 |---|---|---|
 | Proof Tree + hop reconciliation | **Built** | `src/lib/reconcile.ts`, `/dashboard` |
+| Public results trail (digital view of each announced hop, unofficial) | **Built** | `/results`, `src/lib/public-trail.ts` |
 | Live Ear (audio → figures → flag) | **Built** | `/ear`, `src/lib/extract.ts`, `src/lib/providers/stt.ts` |
 | Witness Alarm via SMS (5 languages) | **Built** | `src/lib/services.ts` (`syncAlarms`), `src/lib/i18n.ts` |
 | USSD check + SMS result submission | **Built** | `/api/ussd`, `/api/sms`, `src/lib/sms-codec.ts` |
@@ -50,6 +51,12 @@ Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md`
 - **LGA** must equal the sum of its announced wards; **state** the sum of its LGAs.
 - A PU line read out at ward collation that differs from the wall, or is dropped, is flagged and its witnesses are alerted.
 - Alerts are de-duplicated by fingerprint; each witness gets one SMS (plus a voice call if they sent `VOICE ON`).
+
+### Public results trail (`/results`)
+Citizens don't have to wait for the final announcement to see what was read out. Every announced ward, LGA and state figure
+appears as soon as it is recorded, next to what it was checked against and whether it traces to the witnessed walls.
+By design it is **not a result**: a fixed "Unofficial, INEC declares the official result" banner, no ranking or "leading" labels,
+no extrapolation from partial witness coverage, and no polling-unit rows, phones or photos (per-PU lookup stays separate and rate-limited).
 
 ### SMS format
 `R 012 A120 B85 C40 #7F3` → result for PU 012. `#7F3` is a 3-hex checksum; a garbled message is rejected with the corrected text.
@@ -101,7 +108,7 @@ The same four run in GitHub Actions (`.github/workflows/ci.yml`). Tests need no 
 
 | Role | How you get it | Can open |
 |---|---|---|
-| Public | no account | `/` (landing + **Check a polling unit**), `/login`, `/register`, `/api/public/pu/<code>` |
+| Public | no account | `/` (landing + **Check a polling unit**), `/results` (**public results trail**), `/login`, `/register`, `/api/public/pu/<code>`, `/api/public/trail` |
 | **Witness** | self-register, then confirm your phone with an SMS code | `/witness` — submit your wall (figures or photo), see your walls' status, your alerts, language/voice prefs |
 | **Observer** | created by an admin | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
 | **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, reset) and `/phone` (simulators) |

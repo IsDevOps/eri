@@ -28,6 +28,7 @@ export default async function Landing() {
               <Link href="/login" className="rounded-lg border border-white/15 px-5 py-2.5 text-slate-200 hover:bg-white/5">Sign in</Link>
             </>
           )}
+          <Link href="/results" className="rounded-lg border border-white/15 px-5 py-2.5 text-slate-200 hover:bg-white/5">See the results trail</Link>
         </div>
       </section>
 
@@ -50,7 +51,7 @@ export default async function Landing() {
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-300">Who can do what</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            ["Citizens (public)", "Check any polling unit by code or USSD. See the wall, whether it was read out unchanged, and how many witnesses vouch for it.", "No account"],
+            ["Citizens (public)", "Check any polling unit by code or USSD, and follow the public results trail: what was announced at each hop and whether it traces to the walls. Unofficial; INEC declares results.", "No account"],
             ["Witnesses", "Sign in, confirm your phone, submit your wall by photo or figures, get SMS (and voice) alerts in your language if it changes.", "Self-register"],
             ["Observers", "See the full Proof Tree, run Live Ear on collation audio, and download tribunal evidence packs.", "Created by an admin"],
           ].map(([t, d, tag]) => (
