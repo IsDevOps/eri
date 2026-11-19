@@ -35,9 +35,9 @@ const find = (root: TreeNode, id: string) => {
   return hit;
 };
 
-test("PU wall is the consensus of witnesses; unwitnessed PU is unverified", () => {
+test("PU result (EC8A) is the consensus of witnesses; unwitnessed PU is unverified", () => {
   const tree = buildTreeFromRows(fixture());
-  assert.ok(tallyEq(find(tree, "pu-1").wallSum, { A: 100, B: 50 }));
+  assert.ok(tallyEq(find(tree, "pu-1").witnessedSum, { A: 100, B: 50 }));
   assert.equal(find(tree, "pu-1").witnesses, 2);
   assert.equal(find(tree, "pu-3").status, "unverified");
   assert.equal(find(tree, "ward-1").status, "pending");
@@ -51,7 +51,7 @@ test("disagreeing witnesses mark the PU contested", () => {
   assert.equal(pu2.disagreeing, 1);
 });
 
-test("ward equal to the sum of its walls, with full coverage, is verified", () => {
+test("ward equal to the sum of its witnessed EC8A results, with full coverage, is verified", () => {
   const rows = fixture();
   rows.subs.push({ pu_id: 3, phone: "+2348000000005", source: "sms", results: { A: 10 }, created_at: new Date() });
   rows.cols.push({ id: 1, level: "ward", ward_id: 1, lga_id: null, pu_id: null, results: { A: 190, B: 70 }, dropped: false });
@@ -61,7 +61,7 @@ test("ward equal to the sum of its walls, with full coverage, is verified", () =
 
 test("an inflated ward total is flagged with the exact gap", () => {
   const rows = fixture();
-  // walls: A 180 B 70 (PU 3 unwitnessed, 500 registered). Announce A 180+1240.
+  // witnessed EC8A: A 180 B 70 (PU 3 unwitnessed, 500 registered). Announce A 180+1240.
   rows.cols.push({ id: 1, level: "ward", ward_id: 1, lga_id: null, pu_id: null, results: { A: 1420, B: 70 }, dropped: false });
   const ward = find(buildTreeFromRows(rows), "ward-1");
   assert.equal(ward.status, "flagged");
@@ -76,7 +76,7 @@ test("a surplus that unwitnessed PUs could account for is only unverified, not f
   assert.equal(ward.status, "unverified");
 });
 
-test("a ward total below the walls is flagged (votes were removed)", () => {
+test("a ward total below the witnessed EC8A results is flagged (votes were removed)", () => {
   const rows = fixture();
   rows.cols.push({ id: 1, level: "ward", ward_id: 1, lga_id: null, pu_id: null, results: { A: 100, B: 70 }, dropped: false });
   assert.equal(find(buildTreeFromRows(rows), "ward-1").status, "flagged");

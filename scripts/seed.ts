@@ -42,7 +42,7 @@ const spokenTally = (t: Tally) => PARTIES.map((p) => `Party ${p} ${words(t[p] ??
 
 /* ---------- world ---------- */
 const WARD_NAMES = ["Ayegbe", "Obiaja", "Tudun Mata", "Ikoro"];
-const NO_WITNESS = new Set(["017", "029"]); // two walls nobody has photographed yet (live-demo targets)
+const NO_WITNESS = new Set(["017", "029"]); // two polling units no witness has photographed yet (live-demo targets)
 const AMAKA_PU = "034";
 const AMAKA_PHONE = "+2348031230034";
 const LANG_CYCLE: Lang[] = ["en", "pcm", "yo", "ha", "ig"];
@@ -280,13 +280,13 @@ async function main() {
 - SMS for PU 029: \`${sms("029")}\`
 - Bad-checksum example: \`R 017 A${byCode["017"].tally.A} B${byCode["017"].tally.B} C${byCode["017"].tally.C} D${byCode["017"].tally.D} #${checksum("017", { A: 1 }) }\`
 - Ward 04 witnessed A total: ${w4True.A} · announced in clip: ${w4Announced.A} (+1,240)
-- PU 034 wall A=${byCode[AMAKA_PU].tally.A} → read out at collation A=${amakaChanged.A}
+- PU 034 EC8A A=${byCode[AMAKA_PU].tally.A} → read out at collation A=${amakaChanged.A}
 `,
   );
 
   console.log("→ sanity");
   const [c] = await q<{ n: string }>("select count(*) n from polling_unit");
-  console.log(`   ${c.n} polling units, ${nSubs} submissions. Ward 04 A: walls ${w4True.A}, clip announces ${w4Announced.A}`);
+  console.log(`   ${c.n} polling units, ${nSubs} submissions. Ward 04 A: witnessed EC8A ${w4True.A}, clip announces ${w4Announced.A}`);
   await pool.end();
 }
 

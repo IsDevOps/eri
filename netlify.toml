@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Required in Netlify → Site configuration → Environment variables (not here):
+  #   DATABASE_URL  AUTH_SECRET  COOKIE_SECURE=1  DEMO_LOGINS (optional)
+  # See README → Deploy.

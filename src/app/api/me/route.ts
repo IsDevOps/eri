@@ -4,7 +4,7 @@ import { q, q1 } from "@/lib/db";
 import { json } from "@/lib/http";
 import { puNode, setLang, setVoice } from "@/lib/services";
 
-/** The signed-in user's own profile. For witnesses: their walls, the status of each, and the alerts sent to their (verified) phone. */
+/** The signed-in user's own profile. For witnesses: their polling units, the status of each, and the alerts sent to their (verified) phone. */
 export const GET = guard("any", async (_req, _ctx, user) => {
   if (user.role !== "witness" || !user.phone || !user.phoneVerified) return json({ user, prefs: null, submissions: [], messages: [] });
   const prefs = await q1<{ lang: Lang; voice: boolean }>("select lang, voice from witness where phone=$1", [user.phone]);

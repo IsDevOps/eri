@@ -1,7 +1,7 @@
-# Ẹ̀rí — Trace every vote from the wall to the winner
+# Ẹ̀rí — Trace every vote from the polling unit to the declaration
 
 Entry for the **"Every Vote, Every Voice"** hackathon. Ẹ̀rí (Yorùbá: *witness / proof*) watches the collation hops
-**between** the polling-unit wall (EC8A) and the final announcement — ward (EC8B), LGA (EC8C), state (EC8D) — and alerts the
+**between** the polling-unit result sheet (Form EC8A) and the final declaration (EC8E) — ward (EC8B), LGA (EC8C), state (EC8D) — and alerts the
 witnesses when their numbers change. It complements IReV (INEC) and E Don Kast (polling-unit crowdsourcing); it does not replace them.
 
 > All data is **synthetic**: a made-up *Eriwa LGA* in *Demo State*, 4 wards, 40 polling units, neutral party codes A–D. Strictly non-partisan.
@@ -34,6 +34,7 @@ Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md`
 | Plan item | Status | Where |
 |---|---|---|
 | Proof Tree + hop reconciliation | **Built** | `src/lib/reconcile.ts`, `/dashboard` |
+| Public results trail (digital view of each announced hop, unofficial) | **Built** | `/results`, `src/lib/public-trail.ts` |
 | Live Ear (audio → figures → flag) | **Built** | `/ear`, `src/lib/extract.ts`, `src/lib/providers/stt.ts` |
 | Witness Alarm via SMS (5 languages) | **Built** | `src/lib/services.ts` (`syncAlarms`), `src/lib/i18n.ts` |
 | USSD check + SMS result submission | **Built** | `/api/ussd`, `/api/sms`, `src/lib/sms-codec.ts` |
@@ -45,16 +46,40 @@ Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md`
 | IReV / E Don Kast feeds, observer partnerships, offline P2P | Roadmap slide only | — |
 
 ### How the reconciliation works
-- **PU wall** = consensus of witness submissions (biggest agreeing group). Disagreeing witnesses mark the PU *contested*.
-- **Ward** is checked against the sum of its witnessed walls. A gap is *flagged* if a party is short, or if the surplus is larger
+- **Polling-unit result (EC8A)** = consensus of witness submissions (biggest agreeing group). Disagreeing witnesses mark the PU *contested*.
+- **Ward** is checked against the sum of its witnessed polling-unit EC8A results. A gap is *flagged* if a party is short, or if the surplus is larger
   than the total registered voters of the **unwitnessed** PUs (the only place the votes could legitimately come from); otherwise it is *partly proven*.
 - **LGA** must equal the sum of its announced wards; **state** the sum of its LGAs.
-- A PU line read out at ward collation that differs from the wall, or is dropped, is flagged and its witnesses are alerted.
+- A PU line read out at ward collation that differs from the EC8A, or is dropped, is flagged and its witnesses are alerted.
 - Alerts are de-duplicated by fingerprint; each witness gets one SMS (plus a voice call if they sent `VOICE ON`).
+
+### Public results trail (`/results`)
+Citizens don't have to wait for the final announcement to see what was read out. Every announced ward, LGA and state figure
+appears as soon as it is recorded, next to what it was checked against and whether it traces to the witnessed EC8A results.
+By design it is **not a result**: a fixed "Unofficial, INEC declares the official result" banner, no ranking or "leading" labels,
+no extrapolation from partial witness coverage, and no polling-unit rows, phones or photos (per-PU lookup stays separate and rate-limited).
 
 ### SMS format
 `R 012 A120 B85 C40 #7F3` → result for PU 012. `#7F3` is a 3-hex checksum; a garbled message is rejected with the corrected text.
 Other commands: `LANG YO` (EN, PCM, HA, YO, IG), `VOICE ON|OFF`. USSD: `*347*PU#`.
+
+## Terms (INEC vocabulary)
+
+The product uses INEC's own names. The collation chain follows the *Regulations and Guidelines for the Conduct of Elections*
+(checked against the published text; confirm against the current edition before any real deployment).
+
+| Level | Form | Completed / announced by | In Ẹ̀rí |
+|---|---|---|---|
+| Polling Unit (PU) | **EC8A** — polling-unit result sheet (a public copy is pasted as the **EC60(E)** Publication of Result Poster) | Presiding Officer | what a witness submits by SMS, photo or form |
+| Registration Area (Ward) | **EC8B** | Registration Area (Ward) Collation Officer | ward row in the Proof Tree / results trail |
+| Local Government Area (LGA) | **EC8C** | Local Government Area Collation Officer | LGA row |
+| State | **EC8D** | State Collation Officer | state row (top of the demo tree) |
+| National | EC8D(A) then **EC8E** — Declaration and Return | Presidential Collation Officer, then the Returning Officer (the INEC Chairman for the presidential election) | **not modelled yet** (roadmap) |
+
+Other terms: **polling agent** (a party's agent at a polling unit or collation centre), **witness** (Ẹ̀rí's word for a citizen who
+submits the EC8A they saw), **collation** (summing results upward), **Returning Officer** (declares the result), **IReV** (INEC Result Viewing Portal).
+The demo models the presidential-style chain with one election; other election types use the EC8A(I)/(II) … EC8E(I)/(II) variants.
+Hausa / Yorùbá / Igbo / Pidgin message wording is still a draft (see caveats); the form code **EC8A** is used inside those messages so it stays unambiguous.
 
 ## Architecture
 
@@ -98,12 +123,34 @@ npm run build
 
 The same four run in GitHub Actions (`.github/workflows/ci.yml`). Tests need no database or API keys.
 
+## Deploy (Netlify + hosted Postgres)
+
+The app needs a Postgres database; Netlify only hosts the web app. A "This page couldn't load / server error" right after deploying
+almost always means the database is not configured. Open **`/api/health`** on the deployed site: it states what is missing.
+
+1. **Create a Postgres database** (Neon, Supabase, Railway, …) and copy its connection string, with `?sslmode=require`.
+   On serverless hosts prefer the provider's *pooled* connection string.
+2. **Seed it once from your machine** (this drops and recreates the Ẹ̀rí tables, so point it at the right database):
+   ```bash
+   DATABASE_URL='postgres://…?sslmode=require' SEED_KEEP_ASSETS=1 npm run seed
+   ```
+3. **Set environment variables in Netlify** (Site configuration → Environment variables), then redeploy:
+   | Variable | Value |
+   |---|---|
+   | `DATABASE_URL` | the connection string from step 1 |
+   | `AUTH_SECRET` | a long random string (`openssl rand -hex 32`). Required: without it, sessions break across serverless instances |
+   | `COOKIE_SECURE` | `1` (the site is HTTPS) |
+   | `DEMO_LOGINS` | `1` to show one-click demo sign-ins (leave unset for a real deployment) |
+4. Visit `/api/health` → `{"ok":true,…}`, then `/login`.
+
+Serverless limits to know: uploaded photos go to a temp folder that does not persist (set `UPLOAD_DIR` to a persistent disk, or use a host with one), and the in-memory rate limits reset between instances. For a host that runs the app as one long-lived server, use the included `Dockerfile` (Render, Railway, Fly.io) with the same three variables.
+
 ## Accounts, roles and access
 
 | Role | How you get it | Can open |
 |---|---|---|
-| Public | no account | `/` (**Trust Desk**: trace a result, check an image, send a private incident report), `/login`, `/register`, `/api/public/pu/<code>` |
-| **Witness** | self-register, then confirm your phone with an SMS code | `/witness` — submit your wall (figures or photo), see your walls' status, your alerts, language/voice prefs |
+| Public | no account | `/` (**Trust Desk**: trace a result, check an image, send a private incident report), `/results` (**public results trail**), `/login`, `/register`, `/api/public/pu/<code>`, `/api/public/trail` |
+| **Witness** | self-register, then confirm your phone with an SMS code | `/witness` — submit your polling unit's EC8A result (figures or photo), see the status of your polling units, your alerts, language/voice prefs |
 | **Observer** | created by an admin | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
 | **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, reset) and `/phone` (simulators) |
 
@@ -136,7 +183,7 @@ Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` 
 2. **0:25 – 1:00** Party-agent phone: build & send the SMS for PU 017 (see `DEMO-DATA.md`); WhatsApp-submit `pu017-live.png` / `pu029-live.png`. Sign in as the observer, open `/dashboard` and watch the Proof Tree fill.
 3. **1:00 – 1:50** `/ear` → play **Ward 04 collation**. PU 034 flags, then Ward 04 flashes red: *"announced A 3,120 … posted 1,880 … +1,240 unexplained."*
 4. **1:50 – 2:20** `/phone` → Amaka's phone buzzes (Igbo). Dial `*347*034#` → ALERT with the proof. (Switch to Tunde for the Yorùbá SMS + voice call.)
-5. **2:20 – 3:00** `/ear` → play **LGA collation**; on `/` click the Eriwa LGA number → trace through the wards to **38 of 40 walls**. Close on scale: 176k polling units, 2027. In the PU panel click **Tribunal evidence pack**.
+5. **2:20 – 3:00** `/ear` → play **LGA collation**; on `/` click the Eriwa LGA number → trace through the wards to **38 of 40 polling units**. Close on scale: 176k polling units, 2027. In the PU panel click **Tribunal evidence pack**.
    Bonus: *Check* `pu034-edited.png` in the WhatsApp phone → "does not match 5 witnesses… appears edited".
 
 ## Honest caveats

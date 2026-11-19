@@ -63,7 +63,7 @@ function Bubbles({ msgs }: { msgs: Msg[] }) {
 }
 
 export default function Phones() {
-  /* ---------- party agent: SMS ---------- */
+  /* ---------- polling agent: SMS ---------- */
   const { data: agentMsgs, reload: reloadAgent } = usePoll<Msg[]>(`/api/outbox?phone=${encodeURIComponent(AGENT)}`, 1500);
   const [pu, setPu] = useState("017");
   const [fig, setFig] = useState({ A: "", B: "", C: "", D: "" });
@@ -182,8 +182,8 @@ export default function Phones() {
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        {/* ---------------- Party agent SMS ---------------- */}
-        <PhoneShell title="Party agent · SMS" subtitle={`${AGENT} → ${SHORTCODE}`}>
+        {/* ---------------- Polling agent SMS ---------------- */}
+        <PhoneShell title="Polling agent · SMS" subtitle={`${AGENT} → ${SHORTCODE}`}>
           <Bubbles msgs={agentMsgs ?? []} />
           <div className="space-y-2 border-t border-white/10 p-2">
             <div className="grid grid-cols-5 gap-1.5">
