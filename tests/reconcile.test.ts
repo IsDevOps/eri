@@ -11,7 +11,7 @@ function fixture(over: Partial<Row> = {}): Row {
     pu_id, phone, source: "sms" as const, results, created_at: t(n),
   });
   return {
-    lgas: [{ id: 1, code: "01", name: "Eriwa", state: "Ayelu State" }],
+    lgas: [{ id: 1, code: "01", name: "Abuja Municipal", state: "FCT" }],
     wards: [{ id: 1, lga_id: 1, number: 4, name: "Ward Four" }],
     pus: [
       { id: 1, ward_id: 1, code: "001", name: "PU 1", registered: 400 },

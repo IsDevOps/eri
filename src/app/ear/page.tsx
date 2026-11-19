@@ -1,8 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
-import { PARTIES, fmt, type Tally } from "@/lib/config";
-import { usePoll } from "@/lib/client";
+import { PARTIES, fmt, partyName, type Tally } from "@/lib/config";
+import { readJson, usePoll } from "@/lib/client";
 import { SPEECH_LANGS, speechSupported, startBrowserSpeech } from "@/lib/browser-speech";
 import { SegmentBuffer, segment } from "@/lib/segment";
 import type { TreeNode } from "@/lib/reconcile";
@@ -51,9 +51,9 @@ export default function LiveEar() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ transcript: text, ctx: ctxRef.current }),
     });
-    const j = await r.json();
+    const j = await readJson<{ ctx?: { ward?: number }; entries: Heard["entries"]; engine: string }>(r);
     if (!r.ok) {
-      setError(j.error ?? "ingest failed");
+      setError(j.error ?? "Could not read that announcement. Please try again.");
       return;
     }
     ctxRef.current = j.ctx ?? ctxRef.current;
@@ -68,12 +68,7 @@ export default function LiveEar() {
     ctxRef.current = {};
     try {
       const blob = await (await fetch(`/assets/audio/${c.file}`)).blob();
-      const fd = new FormData();
-      fd.set("file", new File([blob], c.file, { type: "audio/wav" }));
-      const r = await fetch("/api/ear/transcribe", { method: "POST", body: fd });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error);
-      const text: string = j.text;
+      const text: string = c.transcript; // the bundled recordings come with their transcript, so no server round-trip is needed
       const segs = segment(text);
       const ends: number[] = [];
       let acc = 0;
@@ -117,7 +112,7 @@ export default function LiveEar() {
       const fd = new FormData();
       fd.set("file", file);
       const r = await fetch("/api/ear/transcribe", { method: "POST", body: fd });
-      const j = await r.json();
+      const j = await readJson<{ text: string }>(r);
       if (!r.ok) throw new Error(j.error);
       setRevealed((p) => (p ? p + " " : "") + j.text);
       for (const s of segment(j.text)) await ingest(s);
@@ -143,29 +138,40 @@ export default function LiveEar() {
         },
       };
       const loop = async () => {
-        while (live) {
+        let failures = 0;
+        while (live && failures < 3) {
           const rec = new MediaRecorder(stream);
           const chunks: Blob[] = [];
-          rec.ondataavailable = (e) => chunks.push(e.data);
+          rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
           const stopped = new Promise<void>((res) => (rec.onstop = () => res()));
           rec.start();
           await new Promise((r) => setTimeout(r, 7000));
           rec.stop();
           await stopped;
           const blob = new Blob(chunks, { type: rec.mimeType });
+          if (blob.size < 1500) continue; // silence / nothing captured
+          const ext = rec.mimeType.includes("mp4") ? "m4a" : rec.mimeType.includes("ogg") ? "ogg" : "webm";
           const fd = new FormData();
-          fd.set("file", new File([blob], "chunk.webm", { type: rec.mimeType }));
+          fd.set("file", new File([blob], `chunk.${ext}`, { type: rec.mimeType }));
           try {
             const r = await fetch("/api/ear/transcribe", { method: "POST", body: fd });
-            const j = await r.json();
-            if (r.ok && j.text?.trim()) {
-              setRevealed((p) => p + " " + j.text);
-              for (const s of segment(j.text)) await ingest(s);
-            } else if (!r.ok) setError(j.error);
+            const j = await readJson<{ text: string }>(r);
+            if (r.ok) {
+              failures = 0;
+              if (j.text?.trim()) {
+                setRevealed((p) => p + " " + j.text);
+                for (const s of segment(j.text)) await ingest(s);
+              }
+            } else {
+              failures += 1;
+              setError(j.error ?? "Transcription failed.");
+            }
           } catch (e) {
+            failures += 1;
             setError((e as Error).message);
           }
         }
+        if (failures >= 3) setError("Server transcription keeps failing, so listening stopped. Use “Listen live (browser, free)” or paste the text.");
         stream.getTracks().forEach((t) => t.stop());
         setRecording(false);
       };
@@ -284,7 +290,7 @@ export default function LiveEar() {
                 value={pasted}
                 onChange={(e) => setPasted(e.target.value)}
                 rows={3}
-                placeholder='Ward four total. Party A three thousand one hundred and twenty. Party B …'
+                placeholder='Ward four total. APC three thousand one hundred and twenty. LP …'
                 className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 p-2 text-sm text-slate-200 outline-none focus:border-sky-400/60"
               />
               <button
@@ -300,7 +306,7 @@ export default function LiveEar() {
               </button>
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              Browser listening is free (Chrome / Edge, internet needed, English works best). Say each announcement as “Ward 4. Party A 3,120. Party B 400.” — server transcription needs an
+              Browser listening is free (Chrome / Edge, internet needed, English works best). Say each announcement as “Ward 4. APC 3,120. LP 400.” — server transcription needs an
               OpenAI key but handles Hausa, Yorùbá and Igbo better.
             </p>
             {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-sm text-red-300">{error}</p>}
@@ -332,7 +338,7 @@ export default function LiveEar() {
                   <div className="mt-2 space-y-0.5 font-mono text-xs tabular-nums">
                     {PARTIES.slice(0, 1).map((p) => (
                       <div key={p} className="flex justify-between text-slate-400">
-                        <span>Announced {p}</span>
+                        <span>Announced {partyName(p)}</span>
                         <span className={w.gap && w.gap[p] ? "text-red-300" : "text-slate-200"}>{w.announced ? fmt(w.announced[p] ?? 0) : "—"}</span>
                       </div>
                     ))}
@@ -374,7 +380,7 @@ export default function LiveEar() {
                       <span>{h.engine === "rules" ? "rule extract" : "AI extract"}</span>
                     </div>
                     <div className="mt-1 font-mono text-xs tabular-nums text-slate-200">
-                      {e.entry.tally ? PARTIES.map((p) => `${p} ${fmt(e.entry.tally![p] ?? 0)}`).join("  ") : e.entry.dropped ? "dropped" : ""}
+                      {e.entry.tally ? PARTIES.map((p) => `${partyName(p)} ${fmt(e.entry.tally![p] ?? 0)}`).join("  ") : e.entry.dropped ? "dropped" : ""}
                     </div>
                     {e.result.alerts?.map((a, k) => (
                       <p key={k} className="mt-2 rounded bg-red-500/15 px-2 py-1 text-xs text-red-200">🚩 {a.message}</p>

@@ -39,7 +39,7 @@ export default async function Landing() {
           <p className="mt-1 text-sm text-slate-400">polling units independently witnessed</p>
           <div className="my-5 h-px bg-white/10" />
           <p className="text-sm leading-relaxed text-slate-300">A result only earns confidence when its trail is visible—not when it is forwarded the most.</p>
-          <p className="mt-4 text-xs text-slate-500"> Eriwa LGA  · neutral party codes A–D</p>
+          <p className="mt-4 text-xs text-slate-500">Abuja Municipal LGA, FCT · real wards and registered parties · vote figures are fictional sample data</p>
         </aside>
       </section>
 

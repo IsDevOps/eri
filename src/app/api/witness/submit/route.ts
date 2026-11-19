@@ -1,5 +1,5 @@
 import { guard } from "@/lib/auth";
-import { PARTIES, type Tally } from "@/lib/config";
+import { PARTIES, partyName, type Tally } from "@/lib/config";
 import { json } from "@/lib/http";
 import { submitResult } from "@/lib/services";
 
@@ -11,7 +11,7 @@ export const POST = guard(["witness"], async (req, _ctx, user) => {
   const tally: Tally = {};
   for (const p of PARTIES) {
     const n = Number(b[p] ?? 0);
-    if (!Number.isInteger(n) || n < 0 || n > 100000) return json({ ok: false, error: `Party ${p}: enter a whole number between 0 and 100000.` }, 400);
+    if (!Number.isInteger(n) || n < 0 || n > 100000) return json({ ok: false, error: `${partyName(p)}: enter a whole number between 0 and 100000.` }, 400);
     tally[p] = n;
   }
   const r = await submitResult({ puCode: pu, tally, phone: user.phone, source: "sms", raw: "portal" });

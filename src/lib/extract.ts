@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { PARTIES, type Tally } from "./config";
+import { PARTIES, PARTY_NAME, type Tally } from "./config";
 import { spokenId, wordsToNumber } from "./numbers";
 import { openaiEnabled, openaiJson } from "./providers/openai";
 
@@ -18,6 +18,17 @@ const STOP = new Set(["party", "ward", "polling", "pu", "lga", "local", "state",
 const LETTER: Record<string, (typeof PARTIES)[number]> = {
   a: "A", ay: "A", b: "B", bee: "B", c: "C", cee: "C", see: "C", sea: "C", d: "D", dee: "D",
 };
+
+/** Party acronyms as the speech recogniser may write them: "apc", or spelled out "a p c". */
+const ACRONYMS: { party: (typeof PARTIES)[number]; seqs: string[][] }[] = PARTIES.map((p) => ({
+  party: p,
+  seqs: [[PARTY_NAME[p].toLowerCase()], PARTY_NAME[p].toLowerCase().split("")],
+}));
+function acronymAt(toks: string[], i: number): { party: (typeof PARTIES)[number]; len: number } | null {
+  for (const { party, seqs } of ACRONYMS)
+    for (const seq of seqs) if (seq.every((t, k) => toks[i + k] === t)) return { party, len: seq.length };
+  return null;
+}
 
 function tokenize(s: string): string[] {
   return s
@@ -75,18 +86,34 @@ export function extractRules(transcript: string, ctx: ExtractContext = {}): { en
       cur = { level: "state" };
     } else if (["dropped", "cancelled", "canceled", "voided", "excluded"].includes(w) && cur?.level === "pu_at_ward") {
       cur.dropped = true;
-    } else if (w === "party" && cur) {
-      const letter = LETTER[toks[i + 1]];
+    } else if (cur) {
+      // "party A 3,120" or an acronym: "APC 3,120" / "A P C 3,120"
+      let letter: (typeof PARTIES)[number] | undefined;
+      let from = i + 1;
+      if (w === "party") {
+        const ac = acronymAt(toks, i + 1);
+        if (ac) {
+          letter = ac.party;
+          from = i + 1 + ac.len;
+        } else {
+          letter = LETTER[toks[i + 1]];
+          from = i + 2;
+        }
+      } else {
+        const ac = acronymAt(toks, i);
+        if (ac) {
+          letter = ac.party;
+          from = i + ac.len;
+        }
+      }
       if (letter) {
         const run: string[] = [];
-        for (let j = i + 2; j < toks.length; j++) {
-          if (STOP.has(toks[j])) break;
+        for (let j = from; j < toks.length; j++) {
+          if (STOP.has(toks[j]) || acronymAt(toks, j)) break;
           run.push(toks[j]);
         }
         const n = wordsToNumber(run);
-        if (n !== null) {
-          cur.tally = { ...(cur.tally ?? {}), [letter]: n };
-        }
+        if (n !== null) cur.tally = { ...(cur.tally ?? {}), [letter]: n };
       }
     }
   }
@@ -96,7 +123,7 @@ export function extractRules(transcript: string, ctx: ExtractContext = {}): { en
 
 const EXTRACT_PROMPT =
   "You extract election collation announcements from a transcript of a collation officer (ward, LGA or state) reading results aloud (English, Nigerian Pidgin, Hausa, Yoruba or Igbo). " +
-  "Parties are the letters A, B, C, D. Return ONLY a JSON array. Each item: " +
+  "Parties are APC, LP, NNPP and PDP (they may be spoken as letters, e.g. A P C). In the JSON use the keys A=APC, B=LP, C=NNPP, D=PDP. Return ONLY a JSON array. Each item: " +
   '{"level":"pu_at_ward"|"ward"|"lga"|"state","ward":<number|null>,"pu":"<3-digit string|null>","tally":{"A":n,"B":n,...},"dropped":<bool>}. ' +
   "Use level pu_at_ward for a single polling unit line read at ward collation, ward for a ward total, lga for an LGA total, state for a state total. " +
   "Set dropped=true only if the officer says a polling unit result is cancelled/dropped/excluded. Never invent figures.";

@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
-import { PARTIES, type Tally } from "./config";
+import { PARTIES, partyFrom, type Tally } from "./config";
 
 /**
  * SMS result format:  R 012 A120 B85 C40 D7 #7F3
  *   R        = result marker
  *   012      = polling-unit code
- *   A120 ... = party + votes (missing parties count as 0)
+ *   A120 ... = party + votes (missing parties count as 0). Party acronyms work too: APC120 LP85 NNPP40 PDP7
  *   #7F3     = 3-hex checksum over the canonical payload, so a garbled 2G message is rejected
  */
 export function checksum(puCode: string, tally: Tally): string {
@@ -24,14 +24,15 @@ export type ParsedSms =
 
 export function parseResultSms(text: string): ParsedSms {
   const t = text.trim().replace(/\s+/g, " ").toUpperCase();
-  const m = t.match(/^R (\d{1,3}) ((?:[A-Z]\d+ ?)+)#([0-9A-F]{3})$/);
+  const m = t.match(/^R (\d{1,3}) ((?:[A-Z]{1,4}\d+ ?)+)#([0-9A-F]{3})$/);
   if (!m) return { ok: false, reason: "format" };
   const puCode = m[1].padStart(3, "0");
   const tally: Tally = {};
   for (const tok of m[2].trim().split(" ")) {
-    const party = tok[0] as (typeof PARTIES)[number];
-    if (!PARTIES.includes(party)) return { ok: false, reason: "party", puCode };
-    tally[party] = parseInt(tok.slice(1), 10);
+    const tm = tok.match(/^([A-Z]+)(\d+)$/);
+    const party = tm ? partyFrom(tm[1]) : null;
+    if (!tm || !party) return { ok: false, reason: "party", puCode };
+    tally[party] = parseInt(tm[2], 10);
   }
   const expected = checksum(puCode, tally);
   if (expected !== m[3]) return { ok: false, reason: "checksum", puCode, expected };

@@ -2,7 +2,7 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
 import { usePoll } from "@/lib/client";
-import { LANGS, LANG_NAMES, PARTIES, fmt, type Lang } from "@/lib/config";
+import { LANGS, LANG_NAMES, PARTIES, fmt, partyName, type Lang } from "@/lib/config";
 import { witVerb } from "@/lib/plural";
 import type { Status } from "@/lib/reconcile";
 
@@ -124,7 +124,7 @@ function Submit({ onDone }: { onDone: () => void }) {
           </label>
           {PARTIES.map((p) => (
             <label key={p} className="text-xs text-slate-400">
-              Party {p}
+              {partyName(p)}
               <input className={`${input} mt-1`} inputMode="numeric" value={vals[p] ?? ""} onChange={(e) => setVals({ ...vals, [p]: e.target.value.replace(/\D/g, "") })} required />
             </label>
           ))}
@@ -155,7 +155,7 @@ function MyPollingUnits({ subs }: { subs: Me["submissions"] }) {
               <span className="font-medium text-white">PU {s.code} <span className="text-xs text-slate-500">· Ward {String(s.ward).padStart(2, "0")} · via {SOURCE_LABEL[s.source] ?? s.source}</span></span>
               <Pill status={s.status} />
             </div>
-            <p className="mt-1 font-mono text-xs text-slate-400">{PARTIES.map((p) => `${p} ${fmt(s.results[p] ?? 0)}`).join("  ")}</p>
+            <p className="mt-1 font-mono text-xs text-slate-400">{PARTIES.map((p) => `${partyName(p)} ${fmt(s.results[p] ?? 0)}`).join("  ")}</p>
             <p className="mt-1 text-sm text-slate-300">{s.reason}</p>
           </li>
         ))}

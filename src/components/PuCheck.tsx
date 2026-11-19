@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { PARTIES, fmt } from "@/lib/config";
+import { PARTIES, fmt, partyName } from "@/lib/config";
 
 interface PuPublic {
   code: string;
@@ -62,8 +62,8 @@ export function PuCheck() {
           <p className="mt-2 text-sm">{res.message}</p>
           {res.ec8a && res.witnesses > 0 && (
             <p className="mt-2 font-mono text-xs opacity-80">
-              Witnessed EC8A: {PARTIES.map((p) => `${p} ${fmt(res.ec8a![p] ?? 0)}`).join("  ")}
-              {res.readAtWard && <> · Read at ward: {PARTIES.map((p) => `${p} ${fmt(res.readAtWard![p] ?? 0)}`).join("  ")}</>}
+              Witnessed EC8A: {PARTIES.map((p) => `${partyName(p)} ${fmt(res.ec8a![p] ?? 0)}`).join("  ")}
+              {res.readAtWard && <> · Read at ward: {PARTIES.map((p) => `${partyName(p)} ${fmt(res.readAtWard![p] ?? 0)}`).join("  ")}</>}
             </p>
           )}
         </div>

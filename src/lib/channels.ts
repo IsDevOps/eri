@@ -1,4 +1,4 @@
-import { LANGS, PARTIES, USSD_CODE, type Lang, type Tally } from "./config";
+import { LANGS, PARTIES, USSD_CODE, partyFrom, tallyText, type Lang, type Tally } from "./config";
 import { t } from "./i18n";
 import { sendMessage } from "./providers/sms";
 import { checksum } from "./sms-codec";
@@ -30,15 +30,16 @@ export async function handleSms(fromRaw: string, text: string): Promise<string> 
     if (parsed.ok) {
       const res = await submitResult({ puCode: parsed.puCode, tally: parsed.tally, phone: from, source: "sms", raw: body });
       reply = res.ok
-        ? t("sms_ack", lang, { pu: parsed.puCode, tally: tallyStr(parsed.tally), agree: res.agree, ussd: USSD_CODE })
+        ? t("sms_ack", lang, { pu: parsed.puCode, tally: tallyText(parsed.tally, " "), agree: res.agree, ussd: USSD_CODE })
         : t("sms_unknown_pu", lang, { pu: parsed.puCode });
     } else if (parsed.reason === "checksum" && parsed.puCode) {
       // Echo back the corrected message so a garbled 2G text is cheap to fix.
-      const m = body.toUpperCase().match(/^R\s*\d{1,3}\s+((?:[A-Z]\d+\s*)+)#/);
+      const m = body.toUpperCase().match(/^R\s*\d{1,3}\s+((?:[A-Z]{1,4}\d+\s*)+)#/);
       const tally: Tally = {};
       for (const tok of (m?.[1] ?? "").trim().split(/\s+/)) {
-        const p = tok[0] as (typeof PARTIES)[number];
-        if (PARTIES.includes(p)) tally[p] = parseInt(tok.slice(1), 10);
+        const tm = tok.match(/^([A-Z]+)(\d+)$/);
+        const p = tm ? partyFrom(tm[1]) : null;
+        if (tm && p) tally[p] = parseInt(tm[2], 10);
       }
       const fixed = `R ${parsed.puCode} ${tallyStr(tally)} #${checksum(parsed.puCode, tally)}`;
       reply = t("sms_bad_checksum", lang, { expected: fixed });

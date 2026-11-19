@@ -23,3 +23,10 @@ test("a dropped polling unit is reported as dropped", () => {
 test("small talk with no figures yields nothing", () => {
   assert.deepEqual(extractRules("Good afternoon, please keep order.").entries, []);
 });
+
+test("party acronyms are understood, written or spelled out", () => {
+  const written = extractRules("Ward four total. APC three thousand one hundred and twenty. LP one thousand two hundred and eighty. NNPP 696. PDP 216.");
+  assert.deepEqual(written.entries[0].tally, { A: 3120, B: 1280, C: 696, D: 216 });
+  const spelled = extractRules("Polling unit zero three four. A P C 175. L P 129. N N P P 81. P D P 31.", { ward: 4 });
+  assert.deepEqual(spelled.entries[0].tally, { A: 175, B: 129, C: 81, D: 31 });
+});

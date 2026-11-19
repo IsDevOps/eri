@@ -1,6 +1,6 @@
 import { q } from "./db";
 import { wit, witVerb } from "./plural";
-import { PARTIES, emptyTally, tallyEq, tallyKey, tallyTotal, type Tally } from "./config";
+import { PARTIES, emptyTally, partyName, tallyEq, tallyKey, tallyText, tallyTotal, type Tally } from "./config";
 
 export type Level = "state" | "lga" | "ward" | "pu";
 export type Status =
@@ -122,7 +122,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
               reason = `Dropped at ward collation. ${wit(cons.agree)} posted this result.`;
             } else if (readAtWard && !tallyEq(readAtWard, cons.tally)) {
               status = "flagged";
-              reason = `Changed at ward collation: EC8A ${tallyKey(cons.tally)} → read out ${tallyKey(readAtWard)}.`;
+              reason = `Changed at ward collation: EC8A ${tallyText(cons.tally, " ")} → read out ${tallyText(readAtWard, " ")}.`;
             } else if (cons.disagree > 0) {
               status = "contested";
               reason = `${witVerb(cons.disagree, "disagree")} with the ${cons.agree} that match.`;
@@ -179,7 +179,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
             const worst = [...PARTIES].sort((a, b) => Math.abs(gap![b] ?? 0) - Math.abs(gap![a] ?? 0))[0];
             const g = gap![worst] ?? 0;
             const f = (n: number) => n.toLocaleString("en-US");
-            reason = `Ward ${String(ward.number).padStart(2, "0")} announced ${worst} ${f(announced[worst] ?? 0)}. Its ${witnessed} witnessed polling units posted ${f(witnessedSum[worst] ?? 0)}. ${g > 0 ? "+" : ""}${f(g)} unexplained.`;
+            reason = `Ward ${String(ward.number).padStart(2, "0")} announced ${partyName(worst)} ${f(announced[worst] ?? 0)}. Its ${witnessed} witnessed polling units posted ${f(witnessedSum[worst] ?? 0)}. ${g > 0 ? "+" : ""}${f(g)} unexplained.`;
           } else {
             status = "unverified";
             reason = `${positive} extra votes could only come from ${puNodes.length - witnessed} unwitnessed polling unit(s).`;
@@ -228,7 +228,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
       } else if (nonZero(gap)) {
         status = "flagged";
         const worst = [...PARTIES].sort((a, b) => Math.abs(gap![b] ?? 0) - Math.abs(gap![a] ?? 0))[0];
-        reason = `LGA announced ${worst} ${announced[worst] ?? 0} but its wards sum to ${wardSum[worst] ?? 0} (${(gap[worst] ?? 0) > 0 ? "+" : ""}${gap[worst]}).`;
+        reason = `LGA announced ${partyName(worst)} ${announced[worst] ?? 0} but its wards sum to ${wardSum[worst] ?? 0} (${(gap[worst] ?? 0) > 0 ? "+" : ""}${gap[worst]}).`;
       } else {
         const bad = wardNodes.filter((w) => w.status === "flagged").length;
         status = bad ? "unverified" : coverage.witnessed === coverage.total ? "verified" : "unverified";

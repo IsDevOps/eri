@@ -88,8 +88,8 @@ export default function Results() {
           </ul>
 
           <p className="mt-6 text-xs text-slate-500">
-            Updated {new Date(data.updatedAt).toLocaleTimeString()} · refreshes automatically · Eriwa LGA · neutral party codes A–D.
-            Figures are shown in fixed party order. Nothing here ranks parties. To check a single polling unit, use the lookup on the home page or dial{" "}
+            Updated {new Date(data.updatedAt).toLocaleTimeString()} · refreshes automatically · Abuja Municipal LGA, FCT.
+            Ward and party names are real; the vote figures are fictional sample data, not election results. Parties appear in fixed alphabetical order — nothing here ranks them. To check a single polling unit, use the lookup on the home page or dial{" "}
             <span className="font-mono">*347*PU#</span>.
           </p>
         </>

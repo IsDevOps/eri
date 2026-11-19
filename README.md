@@ -4,7 +4,7 @@ Entry for the **"Every Vote, Every Voice"** hackathon. Ẹ̀rí (Yorùbá: *witn
 **between** the polling-unit result sheet (Form EC8A) and the final declaration (EC8E) — ward (EC8B), LGA (EC8C), state (EC8D) — and alerts the
 witnesses when their numbers change. It complements IReV (INEC) and E Don Kast (polling-unit crowdsourcing); it does not replace them.
 
-> All data is **synthetic**: a fictional *Eriwa LGA* in *Ayelu State*, 4 wards, 40 polling units, neutral party codes A–D. Strictly non-partisan.
+> **Real names, invented numbers.** The geography and parties are real — the FCT, *Abuja Municipal Area Council* and four of its wards (City Centre, Garki, Wuse, Gwarinpa), and four INEC-registered parties (APC, LP, NNPP, PDP) — but every vote figure is fictional sample data for the prototype, not an election result. Polling-unit codes (001–040) are this app’s own references, not INEC’s. Parties are always shown in fixed alphabetical order; nothing ranks them.
 
 ## Run it
 
@@ -60,7 +60,7 @@ By design it is **not a result**: a fixed "Unofficial, INEC declares the officia
 no extrapolation from partial witness coverage, and no polling-unit rows, phones or photos (per-PU lookup stays separate and rate-limited).
 
 ### SMS format
-`R 012 A120 B85 C40 #7F3` → result for PU 012. `#7F3` is a 3-hex checksum; a garbled message is rejected with the corrected text.
+`R 012 A120 B85 C40 #7F3` → result for PU 012 (A=APC, B=LP, C=NNPP, D=PDP; the acronyms also work: `R 012 APC120 LP85 …`). `#7F3` is a 3-hex checksum; a garbled message is rejected with the corrected text.
 Other commands: `LANG YO` (EN, PCM, HA, YO, IG), `VOICE ON|OFF`. USSD: `*347*PU#`.
 
 ## Terms (INEC vocabulary)
@@ -185,9 +185,9 @@ Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` 
 0. Before you start: sign in as **admin** (`admin@eri.vote`) — the field channels and the clear-activity control live there; use a second window as **observer** for the Proof Tree.
 1. **0:00 – 0:25** `/` → **Trust Desk**: try PU `034`, then check `pu034-forwarded.png`. The result trail explains the evidence in plain language; the image check says it does not match five witnesses. Show **Raise a concern**: reports are private and labelled unverified rather than becoming a rumour feed.
 2. **0:25 – 1:00** Party-agent phone: build & send the SMS for PU 017 (see `PRESENTER-NOTES.md`); WhatsApp-submit `pu017.png` / `pu029.png`. Sign in as the observer, open `/dashboard` and watch the Proof Tree fill.
-3. **1:00 – 1:50** `/ear` → play **Ward 04 collation**. PU 034 flags, then Ward 04 flashes red: *"announced A 3,120 … posted 1,880 … +1,240 unexplained."*
+3. **1:00 – 1:50** `/ear` → play **Ward 04 collation**. PU 034 flags, then Ward 04 flashes red: *"announced APC 3,120 … posted 1,880 … +1,240 unexplained."*
 4. **1:50 – 2:20** `/phone` → Amaka's phone buzzes (Igbo). Dial `*347*034#` → ALERT with the proof. (Switch to Tunde for the Yorùbá SMS + voice call.)
-5. **2:20 – 3:00** `/ear` → play **LGA collation**; on `/` click the Eriwa LGA number → trace through the wards to **38 of 40 polling units**. Close on scale: 176k polling units, 2027. In the PU panel click **Tribunal evidence pack**.
+5. **2:20 – 3:00** `/ear` → play **LGA collation**; on `/` click the Abuja Municipal LGA number → trace through the wards to **38 of 40 polling units**. Close on scale: 176k polling units, 2027. In the PU panel click **Tribunal evidence pack**.
    Bonus: *Check* `pu034-forwarded.png` in the WhatsApp phone → "does not match 5 witnesses… appears edited".
 
 ## Honest caveats

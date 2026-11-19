@@ -1,7 +1,7 @@
 "use client";
 import { wit } from "@/lib/plural";
 import { useEffect, useRef, useState } from "react";
-import { PARTIES, fmt, tallyTotal, type Tally } from "@/lib/config";
+import { PARTIES, fmt, partyName, tallyTotal, type Tally } from "@/lib/config";
 import type { Status, TreeNode } from "@/lib/reconcile";
 
 export const STATUS_STYLE: Record<Status, { label: string; pill: string; dot: string }> = {
@@ -30,7 +30,7 @@ export function TallyChips({ t, gap }: { t: Tally | null; gap?: Tally | null }) 
         const g = gap?.[p] ?? 0;
         return (
           <span key={p} className={g !== 0 ? "text-red-300" : "text-slate-300"}>
-            <span className="text-slate-500">{p}</span> {fmt(t[p] ?? 0)}
+            <span className="text-slate-500">{partyName(p)}</span> {fmt(t[p] ?? 0)}
             {g !== 0 && <span className="ml-1 rounded bg-red-500/25 px-1 text-red-200">{g > 0 ? "+" : ""}{fmt(g)}</span>}
           </span>
         );
@@ -123,7 +123,7 @@ export function TreeView({
           <span className="w-4 text-center text-xs text-slate-500">{has ? (isOpen ? "▾" : "▸") : "·"}</span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className={`text-sm sm:truncate ${n.level === "pu" ? "font-mono text-slate-300" : "font-medium text-white"}`}>{n.label}</span>
+              <span className={`text-sm ${n.level === "pu" ? "font-mono text-slate-300" : "font-medium text-white"}`}>{n.label}</span>
               {n.level !== "pu" && (
                 <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-400">
                   {n.coverage.witnessed}/{n.coverage.total} PUs witnessed
@@ -185,7 +185,7 @@ export function NodeDetail({ node, path }: { node: TreeNode; path: TreeNode[] })
         <tbody className="font-mono tabular-nums">
           {rows.map((r) => (
             <tr key={r.p} className="border-t border-white/5">
-              <td className="py-1.5 text-slate-300">{r.p}</td>
+              <td className="py-1.5 text-slate-300">{partyName(r.p)}</td>
               <td className="py-1.5 text-right">{r.ann === null ? "—" : fmt(r.ann)}</td>
               <td className="py-1.5 text-right">{r.proof === null ? "—" : fmt(r.proof)}</td>
               <td className={`py-1.5 text-right ${r.gap ? "font-semibold text-red-300" : "text-slate-500"}`}>{r.gap ? `${r.gap > 0 ? "+" : ""}${fmt(r.gap)}` : "0"}</td>

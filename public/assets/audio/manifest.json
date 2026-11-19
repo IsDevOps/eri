@@ -1,12 +1,12 @@
 {
-  "9934fbf4edfff8b11fe412a5c0680664b79c92bcf0757f2e58fdc6ef20f564e8": {
-    "transcript": "Ward zero four collation. Polling unit zero three four. Party A two hundred and twenty five. Party B one hundred and twenty nine. Party C eighty one. Party D thirty one. Ward zero four total. Party A three thousand one hundred and twenty. Party B one thousand two hundred and eighty. Party C six hundred and ninety six. Party D two hundred and sixteen.",
+  "9fb217c53d255f86cf362b79e525e6955ca862c4f0f26d0829a4e2a0d61adb4d": {
+    "transcript": "Ward zero four collation. Polling unit zero three four. APC two hundred and twenty five. LP one hundred and twenty nine. NNPP eighty one. PDP thirty one. Ward zero four total. APC three thousand one hundred and twenty. LP one thousand two hundred and eighty. NNPP six hundred and ninety six. PDP two hundred and sixteen.",
     "label": "Ward 04 collation (EC8B): PU 034 read out + ward total",
     "file": "ward04-collation.wav"
   },
-  "979f28cbd16dd40dec54894aa10a2a938905535fef50213b9aaa6c2cc2aab6dd": {
-    "transcript": "Eriwa local government collation. LGA total. Party A eight thousand seven hundred and sixteen. Party B five thousand four hundred and sixty one. Party C two thousand four hundred and thirty three. Party D eight hundred.",
-    "label": "Eriwa LGA collation (EC8C): LGA total",
+  "bdfeac07cdc586b15a517d49b68accb9da6c5906685d84b0162b0d998fc65e22": {
+    "transcript": "Abuja Municipal Area Council collation. LGA total. APC eight thousand seven hundred and sixteen. LP five thousand four hundred and sixty one. NNPP two thousand four hundred and thirty three. PDP eight hundred.",
+    "label": "Abuja Municipal LGA collation (EC8C): LGA total",
     "file": "lga-collation.wav"
   }
 }

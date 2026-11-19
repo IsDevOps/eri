@@ -1,5 +1,6 @@
 /**
- * Seeds the sample election: "Ayelu State" -> Eriwa LGA -> 4 wards -> 40 polling units (fictional, non-partisan, parties A–D).
+ * Seeds the sample election: FCT -> Abuja Municipal Area Council (AMAC) -> 4 real wards -> 40 polling units.
+ * Party and ward names are real (INEC); every vote figure is invented sample data, not an election result.
  * Also renders sample EC8A sheets (PNG) and collation-centre recordings (macOS `say`).
  *   npm run seed
  */
@@ -8,7 +9,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
-import { PARTIES, emptyTally, type Lang, type Tally } from "../src/lib/config";
+import { PARTIES, PARTY_NAME, emptyTally, type Lang, type Tally } from "../src/lib/config";
 import { pool, q } from "../src/lib/db";
 import { hashPassword } from "../src/lib/password";
 import { SCHEMA_SQL } from "../src/lib/schema";
@@ -38,10 +39,11 @@ function words(n: number): string {
   return words(Math.floor(n / 1000)) + " thousand" + (n % 1000 ? (n % 1000 < 100 ? " and " : " ") + words(n % 1000) : "");
 }
 const digitWords = (s: string) => s.split("").map((d) => ONES[+d]).join(" ");
-const spokenTally = (t: Tally) => PARTIES.map((p) => `Party ${p} ${words(t[p] ?? 0)}.`).join(" ");
+const spokenTally = (t: Tally) => PARTIES.map((p) => `${PARTY_NAME[p]} ${words(t[p] ?? 0)}.`).join(" ");
 
 /* ---------- world ---------- */
-const WARD_NAMES = ["Ayegbe", "Obiaja", "Tudun Mata", "Ikoro"];
+// Real AMAC wards (Abuja Municipal Area Council has 12; four are used here).
+const WARD_NAMES = ["City Centre", "Garki", "Wuse", "Gwarinpa"];
 const NO_WITNESS = new Set(["017", "029"]); // two polling units no witness has photographed yet (filled in live)
 const AMAKA_PU = "034";
 const AMAKA_PHONE = "+2348031230034";
@@ -90,7 +92,7 @@ async function renderSheet(file: string, pu: string, ward: number, t: Tally, opt
   const rows = PARTIES.map(
     (p, i) => `
     <rect x="60" y="${250 + i * 90}" width="560" height="80" fill="none" stroke="#222" stroke-width="2"/>
-    <text x="80" y="${303 + i * 90}" font-size="34" font-family="Helvetica, Arial" fill="#222">PARTY ${p}</text>
+    <text x="80" y="${303 + i * 90}" font-size="34" font-family="Helvetica, Arial" fill="#222">${PARTY_NAME[p]}</text>
     <text x="400" y="${305 + i * 90}" font-size="48" font-family="'Bradley Hand','Noteworthy','Comic Sans MS',cursive" fill="#1a3a8a">${t[p] ?? 0}</text>`,
   ).join("");
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="680" height="760" viewBox="0 0 680 760">
@@ -117,7 +119,7 @@ async function main() {
 
   const pus = buildPUs();
   console.log("→ geography");
-  const lga = (await q<{ id: number }>("insert into lga (code, name, state) values ('ERW','Eriwa','Ayelu State') returning id"))[0];
+  const lga = (await q<{ id: number }>("insert into lga (code, name, state) values ('AMAC','Abuja Municipal','FCT') returning id"))[0];
   const wardIds: Record<number, number> = {};
   for (let w = 1; w <= 4; w++) {
     wardIds[w] = (
@@ -150,7 +152,7 @@ async function main() {
   };
   const amakaSheetHash = await sheet("pu034.png", AMAKA_PU, byCode[AMAKA_PU].tally, "Sheet photographed at the polling unit");
   const editedTally = { ...byCode[AMAKA_PU].tally, A: byCode[AMAKA_PU].tally.A! + 150 };
-  await sheet("pu034-forwarded.png", AMAKA_PU, editedTally, "Forwarded copy: Party A inflated by 150", "forwarded many times");
+  await sheet("pu034-forwarded.png", AMAKA_PU, editedTally, "Forwarded copy: APC inflated by 150", "forwarded many times");
   await sheet("pu017.png", "017", byCode["017"].tally, "First witness photo for PU 017");
   await sheet("pu029.png", "029", byCode["029"].tally, "First witness photo for PU 029");
   writeFileSync(path.join(ecDir, "manifest.json"), JSON.stringify(ecManifest, null, 2));
@@ -228,8 +230,8 @@ async function main() {
     },
     {
       file: "lga-collation.wav",
-      label: "Eriwa LGA collation (EC8C): LGA total",
-      text: `Eriwa local government collation. LGA total. ${spokenTally(lgaTotal)}`,
+      label: "Abuja Municipal LGA collation (EC8C): LGA total",
+      text: `Abuja Municipal Area Council collation. LGA total. ${spokenTally(lgaTotal)}`,
     },
   ];
   const auManifest: Record<string, { transcript: string; label: string; file: string }> = {};
@@ -280,14 +282,14 @@ async function main() {
 - SMS for PU 017: \`${sms("017")}\`
 - SMS for PU 029: \`${sms("029")}\`
 - Bad-checksum example: \`R 017 A${byCode["017"].tally.A} B${byCode["017"].tally.B} C${byCode["017"].tally.C} D${byCode["017"].tally.D} #${checksum("017", { A: 1 }) }\`
-- Ward 04 witnessed A total: ${w4True.A} · announced in clip: ${w4Announced.A} (+1,240)
+- Ward 04 (Gwarinpa) witnessed APC total: ${w4True.A} · announced in clip: ${w4Announced.A} (+1,240)
 - PU 034 EC8A A=${byCode[AMAKA_PU].tally.A} → read out at collation A=${amakaChanged.A}
 `,
   );
 
   console.log("→ sanity");
   const [c] = await q<{ n: string }>("select count(*) n from polling_unit");
-  console.log(`   ${c.n} polling units, ${nSubs} submissions. Ward 04 A: witnessed EC8A ${w4True.A}, clip announces ${w4Announced.A}`);
+  console.log(`   ${c.n} polling units, ${nSubs} submissions. Ward 04 APC: witnessed EC8A ${w4True.A}, clip announces ${w4Announced.A}`);
   await pool.end();
 }
 

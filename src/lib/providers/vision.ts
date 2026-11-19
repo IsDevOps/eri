@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { PARTIES, type Tally } from "../config";
+import { PARTIES, PARTY_NAME, type Tally } from "../config";
 import { openaiEnabled, openaiJson } from "./openai";
 
 /**
@@ -25,7 +25,8 @@ export function sha256(buf: Buffer): string {
 
 const SHEET_PROMPT =
   "You read photographs of Nigerian INEC Form EC8A polling-unit result sheets. Return ONLY JSON: " +
-  '{"pu_code":"<3-digit string or null>","votes":{"A":n,"B":n,"C":n,"D":n},"confidence":<0-1>,"note":"<short>"}. ' +
+  '{"pu_code":"<3-digit string or null>","votes":{"APC":n,"LP":n,"NNPP":n,"PDP":n},"confidence":<0-1>,"note":"<short>"}. ' +
+  "Each row of the sheet is a party; use the party acronym as the key and ignore parties other than these four. " +
   "Read the handwritten figures exactly as written. If a figure is illegible use null for it and lower confidence. Never guess.";
 
 interface Parsed {
@@ -37,7 +38,10 @@ interface Parsed {
 
 function toReading(json: Parsed, engine: SheetReading["engine"]): SheetReading {
   const tally: Tally = {};
-  for (const p of PARTIES) if (typeof json.votes?.[p] === "number") tally[p] = json.votes![p]!;
+  for (const p of PARTIES) {
+    const v = json.votes?.[PARTY_NAME[p]] ?? json.votes?.[p]; // the acronym (current) or the legacy letter key
+    if (typeof v === "number") tally[p] = v;
+  }
   return {
     puCode: json.pu_code ? String(json.pu_code).padStart(3, "0") : null,
     tally,

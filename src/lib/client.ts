@@ -42,3 +42,14 @@ export function usePoll<T>(url: string, ms = 1500): { data: T | null; reload: ()
   }, [url, ms, n, router]);
   return { data, reload: () => setN((x) => x + 1) };
 }
+
+/** Read a JSON reply without throwing when the server answered with nothing (timeout, gateway error) or with HTML. */
+export async function readJson<T = Record<string, unknown>>(r: Response): Promise<T & { error?: string }> {
+  const text = await r.text();
+  try {
+    return JSON.parse(text) as T & { error?: string };
+  } catch {
+    const why = r.status === 504 || r.status === 502 || r.status === 408 || !text ? "The server took too long to answer." : "The server sent an unexpected reply.";
+    return { error: `${why} Please try again.` } as T & { error?: string };
+  }
+}

@@ -3,7 +3,8 @@ import { json } from "@/lib/http";
 import { transcribe } from "@/lib/providers/stt";
 
 async function handle(req: Request) {
-  const fd = await req.formData();
+  const fd = await req.formData().catch(() => null);
+  if (!fd) return json({ error: "The recording could not be read. Please try again." }, 400);
   const file = fd.get("file");
   if (!(file instanceof File)) return json({ error: "file required" }, 400);
   try {

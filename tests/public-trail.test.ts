@@ -5,7 +5,7 @@ import { TRAIL_DISCLAIMER, toPublicTrail } from "../src/lib/public-trail";
 
 function rows(over: Partial<Row> = {}): Row {
   return {
-    lgas: [{ id: 1, code: "01", name: "Eriwa", state: "Ayelu State" }],
+    lgas: [{ id: 1, code: "01", name: "Abuja Municipal", state: "FCT" }],
     wards: [{ id: 1, lga_id: 1, number: 4, name: "Ward Four" }],
     pus: [
       { id: 1, ward_id: 1, code: "001", name: "PU 1", registered: 400 },

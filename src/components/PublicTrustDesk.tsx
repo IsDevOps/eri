@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { PARTIES, fmt } from "@/lib/config";
+import { PARTIES, fmt, partyName } from "@/lib/config";
 
 type DeskMode = "lookup" | "verify" | "report";
 
@@ -260,7 +260,7 @@ function ResultTrail({ result, onVerify, onReport }: { result: PuPublic; onVerif
         {result.ec8a && <div className="mt-4 rounded-xl bg-black/15 p-3">
           <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.12em] opacity-65"><span>Figures on the EC8A</span><span>Votes</span></div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono text-sm tabular-nums sm:grid-cols-4">
-            {PARTIES.map((party) => <span key={party} className="flex justify-between gap-3"><span className="opacity-65">{party}</span><span>{fmt(result.ec8a?.[party] ?? 0)}</span></span>)}
+            {PARTIES.map((party) => <span key={party} className="flex justify-between gap-3"><span className="opacity-65">{partyName(party)}</span><span>{fmt(result.ec8a?.[party] ?? 0)}</span></span>)}
           </div>
         </div>}
         <p className="mt-3 text-xs leading-relaxed opacity-70">{result.message}</p>

@@ -48,3 +48,10 @@ test("malformed or unknown-party messages are rejected", () => {
 test("checksum treats a missing party as zero", () => {
   assert.equal(checksum("012", { A: 1, B: 0 }), checksum("012", { A: 1 }));
 });
+
+test("an SMS may use party acronyms instead of letters", () => {
+  const sms = `R 012 APC120 LP85 NNPP40 PDP7 #${checksum("012", { A: 120, B: 85, C: 40, D: 7 })}`;
+  const parsed = parseResultSms(sms);
+  assert.ok(parsed.ok);
+  if (parsed.ok) assert.deepEqual(parsed.tally, { A: 120, B: 85, C: 40, D: 7 });
+});

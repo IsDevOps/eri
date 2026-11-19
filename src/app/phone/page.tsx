@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { LANGS, LANG_NAMES, USSD_CODE, SHORTCODE } from "@/lib/config";
+import { LANGS, LANG_NAMES, USSD_CODE, SHORTCODE, partyName } from "@/lib/config";
 import { usePoll } from "@/lib/client";
 import { witVerb } from "@/lib/plural";
 
@@ -190,7 +190,7 @@ export default function Phones() {
             <div className="grid grid-cols-5 gap-1.5">
               <input value={pu} onChange={(e) => setPu(e.target.value)} placeholder="PU" className="col-span-1 rounded bg-white/10 px-2 py-1 text-xs text-white outline-none" />
               {(["A", "B", "C", "D"] as const).map((p) => (
-                <input key={p} value={fig[p]} onChange={(e) => setFig({ ...fig, [p]: e.target.value })} placeholder={p} className="rounded bg-white/10 px-2 py-1 text-xs text-white outline-none" />
+                <input key={p} value={fig[p]} onChange={(e) => setFig({ ...fig, [p]: e.target.value })} placeholder={partyName(p)} className="rounded bg-white/10 px-2 py-1 text-xs text-white outline-none" />
               ))}
             </div>
             <div className="flex gap-1.5">

@@ -1,5 +1,5 @@
 {
-  "6b2639ff8c2d38a05e29d5e22819c5fd686296bc2349f08c75bb065b7a0befe7": {
+  "fad97e9a47dc6ec5c0dd858c32e2de4ab6c274f72a2d665409dc9f44f1770733": {
     "pu": "034",
     "tally": {
       "A": 175,
@@ -10,7 +10,7 @@
     "note": "Sheet photographed at the polling unit",
     "file": "pu034.png"
   },
-  "2283e1bcee9af7e5391291725f1c118207f4e9e3aebd0922720866888919b97f": {
+  "9f2ae5248e903190adac948e9d28bf8e1e049ad5d9564bad32aea3cccd33f05d": {
     "pu": "034",
     "tally": {
       "A": 325,
@@ -18,10 +18,10 @@
       "C": 81,
       "D": 31
     },
-    "note": "Forwarded copy: Party A inflated by 150",
+    "note": "Forwarded copy: APC inflated by 150",
     "file": "pu034-forwarded.png"
   },
-  "0bda79dd490e361ca72dc34698f8aa3e8d001ff0964caa3eaf455ae3a9096c48": {
+  "83c86c03f24b7f43a9610c7390273e480b3357c3b432c111bdcb4bbe81063009": {
     "pu": "017",
     "tally": {
       "A": 159,
@@ -32,7 +32,7 @@
     "note": "First witness photo for PU 017",
     "file": "pu017.png"
   },
-  "604a8a576349a03062fdcef2b3c5774f68f767b919077f63cd43226882968cf2": {
+  "d17a2282d5b89fd1ceaf346a6f2243c3663145539414bca414f0228fe99e8ef5": {
     "pu": "029",
     "tally": {
       "A": 162,

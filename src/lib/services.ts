@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { USSD_CODE, tallyEq, tallyKey, type Lang, type Tally, PARTIES } from "./config";
+import { USSD_CODE, tallyEq, tallyKey, tallyText, partyName, type Lang, type Tally, PARTIES } from "./config";
 import { q, q1 } from "./db";
 import { t } from "./i18n";
 import { wit } from "./plural";
@@ -11,7 +11,7 @@ import { buildTree, walk, type TreeNode } from "./reconcile";
 import type { ExtractedEntry } from "./extract";
 
 export const normPhone = (p: string) => p.replace(/[^\d+]/g, "");
-const tallyStr = (tl: Tally) => PARTIES.filter((p) => tl[p] !== undefined).map((p) => `${p}${tl[p]}`).join(" ");
+const tallyStr = (tl: Tally) => tallyText(tl, " ");
 
 export async function audit(event: string, detail: unknown) {
   await q("insert into audit_log (event, detail) values ($1, $2)", [event, JSON.stringify(detail)]);
@@ -254,7 +254,7 @@ export async function syncAlarms() {
         notify(notifyPus, id, "alarm_ward_inflated", (pu) => ({
           pu: pu.code,
           ward: pu.ward,
-          party: worst,
+          party: partyName(worst),
           announced: node.announced?.[worst as keyof Tally] ?? 0,
           ec8asum: node.witnessedSum[worst as keyof Tally] ?? 0,
           gap: Math.abs(node.gap?.[worst as keyof Tally] ?? 0),
@@ -267,7 +267,7 @@ export async function syncAlarms() {
       send = (id) =>
         notify(notifyPus, id, "alarm_lga_mismatch", (pu) => ({
           pu: pu.code,
-          party: worst,
+          party: partyName(worst),
           announced: node.announced?.[worst as keyof Tally] ?? 0,
           ec8asum: node.expected?.[worst as keyof Tally] ?? 0,
         }));
