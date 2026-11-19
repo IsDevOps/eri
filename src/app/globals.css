@@ -1,13 +1,73 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", monospace;
 }
 
 body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 12% -10%, rgba(14, 165, 233, 0.13), transparent 28rem),
+    radial-gradient(circle at 94% 12%, rgba(16, 185, 129, 0.08), transparent 24rem),
+    #0b0f14;
 }
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="light"] body,
+html[data-theme="light"] body.bg-\[\#0b0f14\] {
+  background:
+    radial-gradient(circle at 12% -10%, rgba(14, 165, 233, 0.10), transparent 28rem),
+    radial-gradient(circle at 94% 12%, rgba(16, 185, 129, 0.08), transparent 24rem),
+    #f4f7fb !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] ::selection {
+  background: rgba(14, 165, 233, 0.22);
+  color: #0f172a;
+}
+html[data-theme="light"] .text-emerald-100 {
+  color: #000000 !important;
+}
+html[data-theme="light"] .text-emerald {
+  color: #000000 !important;
+}
+html[data-theme="light"] .text-sky-200 {
+  color: #000000 !important;
+}
+
+html[data-theme="light"] .bg-\[\#0b0f14\],
+html[data-theme="light"] .bg-\[\#0b0f14\]\/90,
+html[data-theme="light"] .bg-\[\#0b0f14\]\/95 {
+  background-color: rgba(248, 250, 252, 0.95) !important;
+}
+
+html[data-theme="light"] .bg-\[\#0d131c\] { background-color: #f8fafc !important; }
+html[data-theme="light"] .bg-\[\#0f141b\] { background-color: #ffffff !important; }
+html[data-theme="light"] .bg-\[\#121821\],
+html[data-theme="light"] .bg-\[\#121a25\],
+html[data-theme="light"] .bg-\[\#0a1018\] { background-color: #ffffff !important; }
+
+html[data-theme="light"] .bg-black\/40,
+html[data-theme="light"] [class*="bg-white/"] { background-color: rgba(15, 23, 42, 0.04) !important; }
+html[data-theme="light"] [class*="border-white"] { border-color: rgba(148, 163, 184, 0.45) !important; }
+
+html[data-theme="light"] .text-white { color: #0f172a !important; }
+html[data-theme="light"] .text-slate-100 { color: #1e293b !important; }
+html[data-theme="light"] .text-slate-200 { color: #334155 !important; }
+html[data-theme="light"] .text-slate-300 { color: #475569 !important; }
+html[data-theme="light"] .text-slate-400 { color: #64748b !important; }
+html[data-theme="light"] .text-slate-500 { color: #718096 !important; }
+html[data-theme="light"] .text-slate-600 { color: #475569 !important; }
+html[data-theme="light"] .eri-section-heading { color: #000000; }
+
+html[data-theme="light"] [class*="shadow-black"] { --tw-shadow-color: rgba(51, 65, 85, 0.12); }
+
+::selection { background: rgba(125, 211, 252, 0.35); color: white; }
 
 /* The "wow": an inflated ward flashes red the moment it is announced. */
 @keyframes eri-flash {
