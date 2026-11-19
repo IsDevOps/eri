@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HOME, getUser } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 import { PublicTrustDesk } from "@/components/PublicTrustDesk";
+import { PublicNavbar } from "@/components/NavBar";
 
 export default async function Landing() {
   const u = await getUser();
@@ -9,6 +10,8 @@ export default async function Landing() {
     "select (select count(*) from polling_unit) as pus, (select count(distinct pu_id) from submission) as witnessed",
   );
   return (
+<>
+       <PublicNavbar />
     <main className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
       <section className="grid items-end gap-8 lg:grid-cols-[1fr_300px]">
         <div>
@@ -31,12 +34,12 @@ export default async function Landing() {
           </div>
         </div>
         <aside className="rounded-3xl border border-white/10 bg-[#121a25] p-5 shadow-xl shadow-black/20">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Live demo coverage</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Live Coverage</p>
           <p className="mt-3 text-4xl font-semibold tracking-tight text-white"><span className="text-emerald-300">{s?.witnessed}</span>/{s?.pus}</p>
           <p className="mt-1 text-sm text-slate-400">polling-unit walls independently witnessed</p>
           <div className="my-5 h-px bg-white/10" />
           <p className="text-sm leading-relaxed text-slate-300">A result only earns confidence when its trail is visible—not when it is forwarded the most.</p>
-          <p className="mt-4 text-xs text-slate-500">Synthetic Eriwa LGA demo · neutral party codes A–D</p>
+          <p className="mt-4 text-xs text-slate-500"> Eriwa LGA  · neutral party codes A–D</p>
         </aside>
       </section>
 
@@ -64,5 +67,6 @@ export default async function Landing() {
         </div>
       </section>
     </main>
+</>
   );
 }

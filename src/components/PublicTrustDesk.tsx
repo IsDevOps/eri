@@ -160,7 +160,7 @@ export function PublicTrustDesk() {
                 <h3 className="font-semibold text-white">Trace a polling-unit result</h3>
                 <p className="mt-1 text-sm text-slate-400">Use the three-digit code on the EC8A result sheet. No account or phone number is needed.</p>
               </div>
-              <button type="button" onClick={() => { setCode("034"); void lookup(undefined, "034"); }} className="rounded-lg border border-sky-300/25 px-3 py-1.5 text-xs font-medium text-sky-200 hover:bg-sky-400/10">Try the live demo: 034</button>
+              <button type="button" onClick={() => { setCode("034"); void lookup(undefined, "034"); }} className="rounded-lg border border-sky-300/25 px-3 py-1.5 text-xs font-medium text-sky-200 hover:bg-sky-400/10">Try the live : 034</button>
             </div>
             <form onSubmit={lookup} className="mt-5 flex flex-col gap-2 sm:flex-row">
               <label className="sr-only" htmlFor="pu-code">Polling-unit code</label>
