@@ -79,10 +79,10 @@ export default function Dashboard() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
-        <section className="rounded-xl border border-white/10 bg-[#0f141b] p-4 h-0 lg:h-[600px] overflow-auto">
+        <section className="rounded-xl border border-white/10 bg-[#0f141b] p-4 max-h-[70vh] min-h-48 overflow-auto lg:h-[600px] lg:max-h-none">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Proof Tree</h2>
-            <span className="text-xs text-slate-500">state → LGA → ward → polling unit → witness photos</span>
+            <span className="hidden text-xs text-slate-500 sm:inline">state → LGA → ward → polling unit → witness photos</span>
           </div>
           {tree ? (
             <TreeView root={tree} selectedId={selected?.node.id ?? null} onSelect={(n) => setSelectedId(n.id)} />

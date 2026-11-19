@@ -7,5 +7,5 @@ export const POST = guard(["witness"], async (req, _ctx, user) => {
   const { code } = (await req.json().catch(() => ({}))) as { code?: string };
   const r = await checkPhoneCode(user.id, String(code ?? "").trim());
   if (r === "ok") await audit("phone_verified", { uid: user.id });
-  return r === "ok" ? json({ ok: true }) : json({ ok: false, error: r === "wrong" ? "Wrong code." : r === "locked" ? "Too many wrong codes. Request a new one." : "Code expired. Request a new one." }, 400);
+  return r === "ok" ? json({ ok: true }) : json({ ok: false, error: r === "wrong" ? "That code isn’t right. Check the text message and try again." : r === "locked" ? "Too many wrong codes. Request a new one." : "Code expired. Request a new one." }, 400);
 });

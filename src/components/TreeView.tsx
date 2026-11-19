@@ -1,4 +1,5 @@
 "use client";
+import { wit } from "@/lib/plural";
 import { useEffect, useRef, useState } from "react";
 import { PARTIES, fmt, tallyTotal, type Tally } from "@/lib/config";
 import type { Status, TreeNode } from "@/lib/reconcile";
@@ -99,26 +100,37 @@ export function TreeView({
     return (
       <div key={n.id}>
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={has ? isOpen : undefined}
+          aria-pressed={sel}
           onClick={() => {
             onSelect(n);
             if (has) toggle(n.id);
           }}
-          className={`group flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition ${
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelect(n);
+              if (has) toggle(n.id);
+            }
+          }}
+          className={`group flex cursor-pointer items-center outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 gap-3 rounded-lg border px-3 py-2 transition ${
             sel ? "border-sky-400/60 bg-sky-400/10" : red ? "border-red-500/40 bg-red-500/10" : "border-transparent hover:bg-white/5"
           } ${flashing.has(n.id) ? "eri-flash" : ""}`}
-          style={{ marginLeft: depth * 18 }}
+          style={{ marginLeft: depth * 14 }}
         >
           <span className="w-4 text-center text-xs text-slate-500">{has ? (isOpen ? "▾" : "▸") : "·"}</span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className={`truncate text-sm ${n.level === "pu" ? "font-mono text-slate-300" : "font-medium text-white"}`}>{n.label}</span>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className={`text-sm sm:truncate ${n.level === "pu" ? "font-mono text-slate-300" : "font-medium text-white"}`}>{n.label}</span>
               {n.level !== "pu" && (
                 <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-400">
                   {n.coverage.witnessed}/{n.coverage.total} PUs witnessed
                 </span>
               )}
               {n.level === "pu" && !!n.witnesses && (
-                <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-400">{n.witnesses} witnesses</span>
+                <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-400">{wit(n.witnesses)}</span>
               )}
             </div>
             <div className="mt-0.5">

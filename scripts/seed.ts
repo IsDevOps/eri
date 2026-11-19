@@ -5,7 +5,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { PARTIES, emptyTally, type Lang, type Tally } from "../src/lib/config";
@@ -248,7 +248,8 @@ async function main() {
       auManifest[h] = { transcript: c.text, label: c.label, file: c.file };
     } catch {
       console.warn(`   (skipped audio ${c.file}: macOS say/afconvert unavailable — use the transcript box on /ear instead)`);
-      auManifest[`text-${c.file}`] = { transcript: c.text, label: c.label, file: c.file };
+      // no macOS speech tools here: keep the bundled recording (if any) recognisable by its hash
+      if (existsSync(wav)) auManifest[sha(wav)] = { transcript: c.text, label: c.label, file: c.file };
     }
   }
   writeFileSync(path.join(auDir, "manifest.json"), JSON.stringify(auManifest, null, 2));

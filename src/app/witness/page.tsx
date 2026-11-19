@@ -3,7 +3,11 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
 import { usePoll } from "@/lib/client";
 import { LANGS, LANG_NAMES, PARTIES, fmt, type Lang } from "@/lib/config";
+import { witVerb } from "@/lib/plural";
 import type { Status } from "@/lib/reconcile";
+
+/** How a result reached us, in words a witness uses. */
+const SOURCE_LABEL: Record<string, string> = { sms: "text or typed entry", photo: "photo", whatsapp: "WhatsApp photo" };
 
 interface Me {
   user: { name: string; email: string; phone: string | null; phoneVerified: boolean };
@@ -95,7 +99,7 @@ function Submit({ onDone }: { onDone: () => void }) {
     e.preventDefault();
     const r = await post("/api/witness/submit", { pu, ...vals });
     const j = await r.json();
-    setMsg(j.ok ? { ok: true, text: `Recorded for PU ${j.pu}. ${j.agree} witness(es) agree. ${j.reason ?? ""}` } : { ok: false, text: j.error });
+    setMsg(j.ok ? { ok: true, text: `Recorded for PU ${j.pu}. ${witVerb(j.agree)}. ${j.reason ?? ""}` } : { ok: false, text: j.error });
     if (j.ok) onDone();
   }
   async function photo(f: File) {
@@ -148,7 +152,7 @@ function MyPollingUnits({ subs }: { subs: Me["submissions"] }) {
         {subs.map((s) => (
           <li key={s.code} className="rounded-lg border border-white/10 bg-[#0f141b] p-3">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-white">PU {s.code} <span className="text-xs text-slate-500">· Ward {String(s.ward).padStart(2, "0")} · via {s.source}</span></span>
+              <span className="font-medium text-white">PU {s.code} <span className="text-xs text-slate-500">· Ward {String(s.ward).padStart(2, "0")} · via {SOURCE_LABEL[s.source] ?? s.source}</span></span>
               <Pill status={s.status} />
             </div>
             <p className="mt-1 font-mono text-xs text-slate-400">{PARTIES.map((p) => `${p} ${fmt(s.results[p] ?? 0)}`).join("  ")}</p>

@@ -1,4 +1,5 @@
 import { q } from "./db";
+import { wit, witVerb } from "./plural";
 import { PARTIES, emptyTally, tallyEq, tallyKey, tallyTotal, type Tally } from "./config";
 
 export type Level = "state" | "lga" | "ward" | "pu";
@@ -118,17 +119,17 @@ export function buildTreeFromRows(r: Row): TreeNode {
               reason = "No witness has submitted this polling unit’s EC8A yet.";
             } else if (dropped) {
               status = "flagged";
-              reason = `Dropped at ward collation. ${cons.agree} witness(es) posted this result.`;
+              reason = `Dropped at ward collation. ${wit(cons.agree)} posted this result.`;
             } else if (readAtWard && !tallyEq(readAtWard, cons.tally)) {
               status = "flagged";
               reason = `Changed at ward collation: EC8A ${tallyKey(cons.tally)} → read out ${tallyKey(readAtWard)}.`;
             } else if (cons.disagree > 0) {
               status = "contested";
-              reason = `${cons.disagree} witness(es) disagree with the ${cons.agree} that match.`;
+              reason = `${witVerb(cons.disagree, "disagree")} with the ${cons.agree} that match.`;
             } else {
               reason = readAtWard
-                ? `${cons.agree} witness(es) agree and the ward collation matches.`
-                : `${cons.agree} witness(es) agree. Not yet read at ward collation.`;
+                ? `${witVerb(cons.agree)} and the ward collation matches.`
+                : `${witVerb(cons.agree)}. Not yet read at ward collation.`;
             }
             const sources = { sms: 0, photo: 0, whatsapp: 0 };
             for (const s of subs) sources[s.source] += 1;

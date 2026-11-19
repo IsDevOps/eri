@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LANGS, LANG_NAMES, USSD_CODE, SHORTCODE } from "@/lib/config";
 import { usePoll } from "@/lib/client";
+import { witVerb } from "@/lib/plural";
 
 const AGENT = "+2348090000001";
 const AMAKA = "+2348031230034";
@@ -143,7 +144,7 @@ export default function Phones() {
     if (mode === "submit") {
       if (j.ok) {
         const t = j.reading.tally;
-        text = `✅ Read PU ${j.reading.puCode}: A ${t.A} · B ${t.B} · C ${t.C} · D ${t.D} (${Math.round(j.reading.confidence * 100)}% sure). ${j.agree} witness(es) agree. No typing needed.`;
+        text = `✅ Read PU ${j.reading.puCode}: A ${t.A} · B ${t.B} · C ${t.C} · D ${t.D} (${Math.round(j.reading.confidence * 100)}% sure). ${witVerb(j.agree)}. No typing needed.`;
       } else text = `⚠️ ${j.error}`;
     } else {
       text = (j.verdict === "genuine" ? "✅ " : j.verdict === "fake" ? "🚩 " : "ℹ️ ") + (j.message ?? j.error);

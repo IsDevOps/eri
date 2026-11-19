@@ -87,17 +87,17 @@ export default function Admin() {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2">
         <form onSubmit={create} className={`${card} space-y-3`}>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Add a user</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <input className={input} placeholder="Full name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
             <input className={input} type="email" placeholder="Email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required />
             <select className={input} value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })}>
               <option value="observer">observer</option><option value="witness">witness</option><option value="admin">admin</option>
             </select>
             <input className={input} placeholder="Phone (witness only)" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
-            <input className={`${input} col-span-2`} type="password" placeholder="Initial password (8+ characters)" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required />
+            <input className={`${input} sm:col-span-2`} type="password" placeholder="Initial password (8+ characters)" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required />
           </div>
           <button className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-medium text-white hover:bg-sky-400">Create user</button>
         </form>
@@ -109,7 +109,7 @@ export default function Admin() {
               <li key={a.id} className="flex gap-2 border-b border-white/5 py-1">
                 <span className="shrink-0 text-slate-500">{new Date(a.created_at).toLocaleTimeString()}</span>
                 <span className="shrink-0 font-medium text-sky-300">{a.event}</span>
-                <span className="truncate font-mono text-slate-500">{a.detail ? JSON.stringify(a.detail) : ""}</span>
+                <span className="min-w-0 truncate font-mono text-slate-500">{a.detail ? JSON.stringify(a.detail) : ""}</span>
               </li>
             ))}
           </ul>

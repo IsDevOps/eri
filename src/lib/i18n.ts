@@ -40,7 +40,7 @@ const D: Dict = {
   },
   // ---- SMS acknowledgements ----
   sms_ack: {
-    en: "Eri: PU {pu} recorded: {tally}. {agree} witness(es) agree. Dial {ussd} anytime to check it.",
+    en: "Eri: PU {pu} recorded: {tally}. Witnesses in agreement: {agree}. Dial {ussd} anytime to check it.",
     pcm: "Eri: PU {pu} don enter: {tally}. {agree} witness agree. Dial {ussd} anytime check am.",
     ha: "Eri: An adana rumfa {pu}: {tally}. Shaidu {agree} sun yarda. Kira {ussd} a kowane lokaci.",
     yo: "Eri: A ti gba ibudo {pu}: {tally}. Elerii {agree} fohun. Pe {ussd} nigbakugba.",

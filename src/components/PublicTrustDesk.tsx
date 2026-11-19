@@ -86,8 +86,8 @@ export function PublicTrustDesk() {
     body.set("file", image);
     try {
       const response = await fetch("/api/check-image", { method: "POST", body });
-      const verdict = (await response.json()) as ImageVerdict;
-      setImageResult(response.ok ? verdict : { verdict: "error", message: verdict.message ?? "We could not check that image." });
+      const verdict = (await response.json()) as ImageVerdict & { error?: string };
+      setImageResult(response.ok ? verdict : { verdict: "error", message: verdict.message ?? verdict.error ?? "We could not check that image." });
     } catch {
       setImageResult({ verdict: "error", message: "Your connection dropped. The image was not checked." });
     } finally {
@@ -237,7 +237,9 @@ function ResultTrail({ result, onVerify, onReport }: { result: PuPublic; onVerif
   const status =
     result.status === "verified" && !result.readAtWard
       ? { label: "Witnesses agree", tone: statusCopy.verified.tone, detail: `${result.witnesses} witness${result.witnesses === 1 ? "" : "es"} posted the same EC8A figures. It has not been read out at ward collation yet.` }
-      : statusCopy[result.status];
+      : result.status === "unverified" && result.witnesses === 0
+        ? { label: "No witness evidence yet", tone: statusCopy.unverified.tone, detail: "No witness has posted this polling unit’s EC8A yet, so its trail cannot be checked." }
+        : statusCopy[result.status];
   const wardState = result.readAtWard ? (result.status === "flagged" ? "Different figures detected" : "Figures read at ward") : "Awaiting ward collation";
   return (
     <article aria-live="polite" className={`eri-in mt-5 overflow-hidden rounded-2xl border ${status.tone}`}>

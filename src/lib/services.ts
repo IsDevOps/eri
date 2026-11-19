@@ -4,6 +4,7 @@ import path from "node:path";
 import { USSD_CODE, tallyEq, tallyKey, type Lang, type Tally, PARTIES } from "./config";
 import { q, q1 } from "./db";
 import { t } from "./i18n";
+import { wit } from "./plural";
 import { sendMessage } from "./providers/sms";
 import { readSheet, sha256 } from "./providers/vision";
 import { buildTree, walk, type TreeNode } from "./reconcile";
@@ -125,13 +126,13 @@ export async function checkImage(buf: Buffer, mime: string) {
       verdict: "genuine" as const,
       pu: reading.puCode,
       reading,
-      message: `Matches ${matching} witness(es) at PU ${reading.puCode}${known ? " and this exact photo was submitted by a witness" : ""}.`,
+      message: `Matches ${wit(matching)} at PU ${reading.puCode}${known ? " and this exact photo was submitted by a witness" : ""}.`,
     };
   return {
     verdict: "fake" as const,
     pu: reading.puCode,
     reading,
-    message: `Does not match ${subs.length - matching} of ${subs.length} witnesses at PU ${reading.puCode}${known ? "" : " and appears edited (no witness submitted this image)"}. Image says ${tallyStr(reading.tally)}; witnesses say ${tallyStr(subs[0].results)}.`,
+    message: `Does not match ${subs.length - matching} of ${wit(subs.length)} at PU ${reading.puCode}${known ? "" : " and appears edited (no witness submitted this image)"}. Image says ${tallyStr(reading.tally)}; witnesses say ${tallyStr(subs[0].results)}.`,
   };
 }
 
