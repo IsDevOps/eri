@@ -176,7 +176,7 @@ export function Nav({ user }: { user: NavUser | null }) {
           </div>
 
           <div className="mb-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.055] p-3">
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" /> Synthetic demo live</div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />  live</div>
             <p className="mt-1.5 text-xs leading-relaxed text-slate-400">Made-up data only. Evidence states update as the demo moves.</p>
           </div>
 
