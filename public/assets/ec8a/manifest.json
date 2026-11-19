@@ -1,0 +1,46 @@
+{
+  "6b2639ff8c2d38a05e29d5e22819c5fd686296bc2349f08c75bb065b7a0befe7": {
+    "pu": "034",
+    "tally": {
+      "A": 175,
+      "B": 129,
+      "C": 81,
+      "D": 31
+    },
+    "note": "Sheet photographed at the polling unit",
+    "file": "pu034.png"
+  },
+  "2283e1bcee9af7e5391291725f1c118207f4e9e3aebd0922720866888919b97f": {
+    "pu": "034",
+    "tally": {
+      "A": 325,
+      "B": 129,
+      "C": 81,
+      "D": 31
+    },
+    "note": "Forwarded copy: Party A inflated by 150",
+    "file": "pu034-forwarded.png"
+  },
+  "0bda79dd490e361ca72dc34698f8aa3e8d001ff0964caa3eaf455ae3a9096c48": {
+    "pu": "017",
+    "tally": {
+      "A": 159,
+      "B": 121,
+      "C": 44,
+      "D": 33
+    },
+    "note": "First witness photo for PU 017",
+    "file": "pu017.png"
+  },
+  "604a8a576349a03062fdcef2b3c5774f68f767b919077f63cd43226882968cf2": {
+    "pu": "029",
+    "tally": {
+      "A": 162,
+      "B": 117,
+      "C": 89,
+      "D": 34
+    },
+    "note": "First witness photo for PU 029",
+    "file": "pu029.png"
+  }
+}

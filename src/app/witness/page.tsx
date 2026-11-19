@@ -46,7 +46,7 @@ export default function WitnessPortal() {
 function Verify({ onDone }: { onDone: () => void }) {
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
-  // demo-mode SMS code stashed by the register form; server render sees null, the browser sees the stored value
+  // verification code stashed by the register form while SMS delivery is simulated; server render sees null, the browser sees the stored value
   const stored = useSyncExternalStore(
     () => () => {},
     () => sessionStorage.getItem("eri_devcode"),
@@ -74,7 +74,7 @@ function Verify({ onDone }: { onDone: () => void }) {
     <form onSubmit={check} className={`${card} max-w-md space-y-3`}>
       <h2 className="text-lg font-medium text-white">Confirm your phone</h2>
       <p className="text-sm text-slate-400">We sent a 6-digit code by SMS. Until you confirm it you can’t submit results or see alerts — that stops anyone reading messages meant for someone else.</p>
-      {hint && <p className="rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">Demo mode: the simulated SMS code is <span className="font-mono text-base">{hint}</span></p>}
+      {hint && <p className="rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">Your verification code: <span className="font-mono text-base">{hint}</span></p>}
       <input className={input} inputMode="numeric" maxLength={6} placeholder="123456" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} aria-label="Verification code" />
       {err && <p role="alert" className="text-sm text-red-300">{err}</p>}
       <div className="flex gap-2">

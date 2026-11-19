@@ -28,7 +28,7 @@ services:
     environment:
       DATABASE_URL: postgres://eri:eri@db:5432/eri   # overrides the localhost URL in .env.local
       AUTH_SECRET: ${AUTH_SECRET:-eri-local-docker-secret-change-me}
-      DEMO_LOGINS: ${DEMO_LOGINS:-1}                 # one-click demo logins; set DEMO_LOGINS=0 for anything real
+      SHOW_SMS_CODES: ${SHOW_SMS_CODES:-1}           # return SMS verification codes to the browser while SMS is simulated; set 0 once a real gateway is connected
     volumes:
       - uploads:/app/data/uploads
     ports:

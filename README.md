@@ -4,7 +4,7 @@ Entry for the **"Every Vote, Every Voice"** hackathon. Ẹ̀rí (Yorùbá: *witn
 **between** the polling-unit result sheet (Form EC8A) and the final declaration (EC8E) — ward (EC8B), LGA (EC8C), state (EC8D) — and alerts the
 witnesses when their numbers change. It complements IReV (INEC) and E Don Kast (polling-unit crowdsourcing); it does not replace them.
 
-> All data is **synthetic**: a made-up *Eriwa LGA* in *Demo State*, 4 wards, 40 polling units, neutral party codes A–D. Strictly non-partisan.
+> All data is **synthetic**: a fictional *Eriwa LGA* in *Ayelu State*, 4 wards, 40 polling units, neutral party codes A–D. Strictly non-partisan.
 
 ## Run it
 
@@ -12,7 +12,7 @@ witnesses when their numbers change. It complements IReV (INEC) and E Don Kast (
 brew services start postgresql@18      # or any Postgres; default URL is postgres://localhost:5432/eri
 createdb eri
 npm install
-npm run seed                           # schema + 40 PUs + 164 witness submissions + demo EC8A images + demo audio (macOS `say`)
+npm run seed                           # schema + 40 PUs + 164 witness submissions + sample EC8A images + collation recordings (macOS `say`)
 npm run dev -- -p 3100                 # http://localhost:3100
 ```
 
@@ -23,11 +23,11 @@ docker compose up -d --build          # http://localhost:3100  (DB is also on 12
 docker compose down -v                # stop and wipe data
 ```
 
-The first start seeds the demo data automatically (`docker-entrypoint.sh`); it keeps the shipped demo PNG/WAV files
+The first start seeds the sample election automatically (`docker-entrypoint.sh`); it keeps the shipped sample PNG/WAV files
 (`SEED_KEEP_ASSETS=1`) because macOS `say` isn't available in the container. Optional provider keys are read from `.env.local`.
 
-`npm run seed` is also the full reset. During a rehearsal, **Phones → ↺ Reset demo** rewinds only the live changes.
-Demo cheat-sheet (phones, SMS strings, key figures) is written to `DEMO-DATA.md` by the seed.
+`npm run seed` is also the full reset. During a rehearsal, **Field channels → ↺ Clear live activity** (or Admin) rewinds only the live changes.
+Presenter notes (sign-ins, phones, SMS strings, key figures) are written to `PRESENTER-NOTES.md` by the seed.
 
 ## What is built (maps to the 48-hour scope)
 
@@ -72,12 +72,12 @@ The product uses INEC's own names. The collation chain follows the *Regulations 
 | Polling Unit (PU) | **EC8A** — polling-unit result sheet (a public copy is pasted as the **EC60(E)** Publication of Result Poster) | Presiding Officer | what a witness submits by SMS, photo or form |
 | Registration Area (Ward) | **EC8B** | Registration Area (Ward) Collation Officer | ward row in the Proof Tree / results trail |
 | Local Government Area (LGA) | **EC8C** | Local Government Area Collation Officer | LGA row |
-| State | **EC8D** | State Collation Officer | state row (top of the demo tree) |
+| State | **EC8D** | State Collation Officer | state row (top of the tree) |
 | National | EC8D(A) then **EC8E** — Declaration and Return | Presidential Collation Officer, then the Returning Officer (the INEC Chairman for the presidential election) | **not modelled yet** (roadmap) |
 
 Other terms: **polling agent** (a party's agent at a polling unit or collation centre), **witness** (Ẹ̀rí's word for a citizen who
 submits the EC8A they saw), **collation** (summing results upward), **Returning Officer** (declares the result), **IReV** (INEC Result Viewing Portal).
-The demo models the presidential-style chain with one election; other election types use the EC8A(I)/(II) … EC8E(I)/(II) variants.
+The app models the presidential-style chain with one election; other election types use the EC8A(I)/(II) … EC8E(I)/(II) variants.
 Hausa / Yorùbá / Igbo / Pidgin message wording is still a draft (see caveats); the form code **EC8A** is used inside those messages so it stays unambiguous.
 
 ## Architecture
@@ -91,24 +91,24 @@ Hausa / Yorùbá / Igbo / Pidgin message wording is still a draft (see caveats);
                            src/lib/extract.ts    transcript ──► figures (rules, or Claude if keyed)
                            src/lib/sms-codec.ts  `R 012 A120 B85 #7F3` encode / parse / checksum
                                         │
-              src/lib/providers/  sms · stt · vision   (simulator by default, real API when a key is set)
+              src/lib/providers/  sms · stt · vision   (sample/offline fallback by default, real API when a key is set)
                                         │
                                    PostgreSQL  (src/lib/schema.ts, plain SQL via src/lib/db.ts)
 ```
 
 | Folder | What lives there |
 |---|---|
-| `src/app/` | Pages by role: `/` public, `/witness`, `/dashboard`, `/ear`, `/admin`, `/phone` (simulators), `/login`, `/register` |
+| `src/app/` | Pages by role: `/` public, `/witness`, `/dashboard`, `/ear`, `/admin`, `/phone` (field channels: SMS, USSD, WhatsApp), `/login`, `/register` |
 | `src/app/api/` | HTTP endpoints; auth + role check first, then a call into `src/lib` |
 | `src/lib/` | All business logic. `reconcile.ts`, `sms-codec.ts`, `numbers.ts`, `extract.ts` are pure and unit-tested |
-| `src/lib/providers/` | One file per external capability, each with a simulator and a real implementation behind the same function |
+| `src/lib/providers/` | One file per external capability, each with an offline fallback and a real implementation behind the same function |
 | `src/components/` | Shared UI: Nav, TreeView, AuthForm, PuCheck |
 | `src/proxy.ts` | Optimistic redirect for signed-out / wrong-role visitors (Next.js 16 renamed Middleware to Proxy) |
-| `scripts/` | `seed.ts` (schema + synthetic data + demo assets), `ensure-seed.ts` (Docker first-run check) |
+| `scripts/` | `seed.ts` (schema + sample election + sample assets), `ensure-seed.ts` (Docker first-run check) |
 | `tests/` | Unit tests (`node:test`) |
 
 Design choices worth knowing: reconciliation is a pure function of rows (`buildTreeFromRows`), so the Proof Tree is
-testable without a database; every external dependency is behind an interface with an offline simulator, so the demo
+testable without a database; every external dependency is behind an interface with an offline fallback, so a walkthrough
 never depends on network or keys.
 
 ## Tests and checks
@@ -139,7 +139,8 @@ almost always means the database is not configured. Open **`/api/health`** on th
    | `DATABASE_URL` | the connection string from step 1 |
    | `AUTH_SECRET` | a long random string (`openssl rand -hex 32`). Required: without it, sessions break across serverless instances |
    | `COOKIE_SECURE` | `1` (the site is HTTPS) |
-   | `DEMO_LOGINS` | `1` to show one-click demo sign-ins (leave unset for a real deployment) |
+   | `SHOW_SMS_CODES` | `1` to show the SMS verification code on screen while SMS delivery is simulated (set `0` once a real SMS gateway is connected) |
+   | `OPENAI_MODEL` | optional; model for photo reading and figure extraction when only `OPENAI_API_KEY` is set (default `gpt-4o`) |
 4. Visit `/api/health` → `{"ok":true,…}`, then `/login`.
 
 Serverless limits to know: uploaded photos go to a temp folder that does not persist (set `UPLOAD_DIR` to a persistent disk, or use a host with one), and the in-memory rate limits reset between instances. For a host that runs the app as one long-lived server, use the included `Dockerfile` (Render, Railway, Fly.io) with the same three variables.
@@ -149,46 +150,49 @@ Serverless limits to know: uploaded photos go to a temp folder that does not per
 | Role | How you get it | Can open |
 |---|---|---|
 | Public | no account | `/` (landing + **Check a polling unit**), `/results` (**public results trail**), `/login`, `/register`, `/api/public/pu/<code>`, `/api/public/trail` |
-| **Witness** | self-register, then confirm your phone with an SMS code | `/witness` — submit your polling unit's EC8A result (figures or photo), see the status of your polling units, your alerts, language/voice prefs |
-| **Observer** | created by an admin | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
-| **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, reset) and `/phone` (simulators) |
+| **Witness** | choose *Witness* at sign-up, then confirm your phone with an SMS code | `/witness` — submit your polling unit's EC8A result (figures or photo), see the status of your polling units, your alerts, language/voice prefs |
+| **Observer** | choose *Observer* at sign-up (email + password; no phone needed) | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
+| **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, clear live activity) and `/phone` (field channels: SMS, USSD, WhatsApp) |
 
 How it is enforced
 - Email + password; passwords hashed with **scrypt**; sessions are **signed, httpOnly, SameSite=Lax cookies** (8 h). The user is re-read from the DB on every request, so disabling an account or changing a role takes effect immediately.
 - `src/proxy.ts` redirects signed-out / wrong-role visitors; every page layout (`requirePage`) and **every API route (`guard(...)`)** re-checks the role. State-changing requests from another site are refused (Origin check).
 - Login lockout (6 failures per email / 30 per IP per 15 min), sign-up and public-lookup rate limits (in-memory, per process).
 - A witness only ever acts as **themselves**: result submissions use the phone on the verified account, never a client-supplied number. Unverified phones see no messages and cannot submit (stops someone registering with a stranger's number).
-- `/api/sms` and `/api/ussd` webhooks need `WEBHOOK_SECRET` (header `x-webhook-secret` or `?key=`); without it only a signed-in admin (the simulator) can call them.
-- Demo sign-ins (password `eri-demo-2026`, override with `SEED_PASSWORD`): `admin@eri.demo`, `observer@eri.demo`, `amaka@eri.demo`, `tunde@eri.demo`. The one-click buttons on `/login` show only while `DEMO_LOGINS=1`.
+- `/api/sms` and `/api/ussd` webhooks need `WEBHOOK_SECRET` (header `x-webhook-secret` or `?key=`); without it only a signed-in admin (the field-channel console) can call them.
+- Starter sign-ins from the seed (password `Eri-Trace-2026`, override with `SEED_PASSWORD`): `admin@eri.vote`, `observer@eri.vote`, `amaka@eri.vote`, `tunde@eri.vote`. Change the password and remove the sample accounts before any real use. Anyone can self-register as a witness or observer; **admin accounts can only be created by an admin**.
 
 Not done (out of 48 h): password reset by email, MFA, a shared rate-limit store (limits reset on restart and aren't shared across instances), session revocation lists (disable the account instead), CSRF tokens beyond SameSite+Origin.
 
-## Real providers (all optional — simulators work offline)
+## Real providers (all optional — everything works offline on the sample election)
 
 Copy `.env.example` → `.env.local`.
 
 | Capability | Env | Without it |
 |---|---|---|
-| EC8A handwriting + multilingual figure extraction | `ANTHROPIC_API_KEY` | vision: demo sheets only (hash lookup); extraction: rule-based English/digits |
-| Speech-to-text (en/pcm/ha/yo/ig) | `OPENAI_API_KEY` | demo clips only (hash lookup) |
+| EC8A handwriting reading + multilingual figure extraction | `OPENAI_API_KEY` **or** `ANTHROPIC_API_KEY` (Anthropic wins if both are set) | the bundled sample sheets only (hash lookup); extraction: rule-based English/digits |
+| Speech-to-text (en/pcm/ha/yo/ig) | `OPENAI_API_KEY` (Whisper) | the bundled sample recordings only (hash lookup) |
+| Live microphone on `/ear` | none (browser) | **🎙 Listen live (browser, free)** works with no key — see below |
 | Real SMS | `AT_USERNAME`, `AT_API_KEY`, `AT_SENDER_ID` (Africa's Talking) | messages shown on `/phone` |
+
+**Live Ear without an OpenAI key.** Claude's API takes no audio, so the Anthropic key can't transcribe. Instead `/ear` can use the browser's own speech recognition (Web Speech API, `src/lib/browser-speech.ts`): no key and no server cost. Limits: Chrome / Edge only (the button is disabled elsewhere), it needs internet and sends the audio to the browser vendor's service, and it recognises English far better than Hausa / Yorùbá / Igbo. Short phrases are buffered into whole announcements (`src/lib/segment.ts`) and sent when the next ward / polling unit / total starts, or after a 4-second pause. With only the rule-based extractor, speak in the form “Ward 4. Party A 3,120. Party B 400.”; with `ANTHROPIC_API_KEY` set, Claude extracts figures from looser speech.
 
 Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` — they already accept its field names.
 
-## 3-minute demo script
+## 3-minute walkthrough
 
-0. Before you start: sign in as **admin** (one-click on `/login`) — the simulators and reset live there; use a second window as **observer** for the Proof Tree.
-1. **0:00 – 0:25** `/phone` → WhatsApp phone: send `pu034-genuine.png`. *"Did my polling unit's result survive the journey?"*
-2. **0:25 – 1:00** Party-agent phone: build & send the SMS for PU 017 (see `DEMO-DATA.md`); WhatsApp-submit `pu017-live.png` / `pu029-live.png`. Sign in as the observer, open `/dashboard` and watch the Proof Tree fill.
+0. Before you start: sign in as **admin** (`admin@eri.vote`) — the field channels and the clear-activity control live there; use a second window as **observer** for the Proof Tree.
+1. **0:00 – 0:25** `/phone` → WhatsApp phone: send `pu034.png`. *"Did my polling unit's result survive the journey?"*
+2. **0:25 – 1:00** Party-agent phone: build & send the SMS for PU 017 (see `PRESENTER-NOTES.md`); WhatsApp-submit `pu017.png` / `pu029.png`. Sign in as the observer, open `/dashboard` and watch the Proof Tree fill.
 3. **1:00 – 1:50** `/ear` → play **Ward 04 collation**. PU 034 flags, then Ward 04 flashes red: *"announced A 3,120 … posted 1,880 … +1,240 unexplained."*
 4. **1:50 – 2:20** `/phone` → Amaka's phone buzzes (Igbo). Dial `*347*034#` → ALERT with the proof. (Switch to Tunde for the Yorùbá SMS + voice call.)
 5. **2:20 – 3:00** `/ear` → play **LGA collation**; on `/` click the Eriwa LGA number → trace through the wards to **38 of 40 polling units**. Close on scale: 176k polling units, 2027. In the PU panel click **Tribunal evidence pack**.
-   Bonus: *Check* `pu034-edited.png` in the WhatsApp phone → "does not match 5 witnesses… appears edited".
+   Bonus: *Check* `pu034-forwarded.png` in the WhatsApp phone → "does not match 5 witnesses… appears edited".
 
 ## Honest caveats
 - Hausa / Yorùbá / Igbo / Pidgin strings are **drafts** and need native-speaker review before any real use.
-- The Claude-vision, Whisper and Africa's Talking code paths are written but have **not been exercised against live keys**; the simulators are what is tested.
-- Demo audio is macOS `say`; the live-mic path records 7-second chunks and relies on the STT provider.
+- The Claude-vision, Whisper and Africa's Talking code paths are written but have **not been exercised against live keys**; the offline fallbacks are what is tested.
+- Sample audio is macOS `say`; the server live-mic path records 7-second chunks and relies on the STT provider. The browser-mic path is tested with a mocked recognizer (no real microphone or speech engine was exercised).
 - Real deployment still needs a shared rate-limit store, email-based password reset and MFA (see *Accounts*).
 
 ## Credits

@@ -284,7 +284,7 @@ export function buildTreeFromRows(r: Row): TreeNode {
     id: "state-1",
     level: "state",
     refId: 1,
-    label: `${r.lgas[0]?.state ?? "State"} (synthetic)`,
+    label: `${r.lgas[0]?.state ?? "State"}`,
     announced,
     expected: announcedLgas.length ? lgaSum : null,
     gap,

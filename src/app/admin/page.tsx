@@ -38,9 +38,9 @@ export default function Admin() {
     if (pw) patch(u.id, { password: pw });
   }
   async function reset() {
-    if (!confirm("Rewind all live demo changes (alerts, messages, collation events, phone submissions)?")) return;
-    const r = await send("POST", "/api/demo/reset");
-    setMsg(r.ok ? "Demo reset." : "Reset failed.");
+    if (!confirm("Clear live activity (alerts, messages, collation events, phone submissions)? Accounts and polling-unit data are kept.")) return;
+    const r = await send("POST", "/api/admin/reset");
+    setMsg(r.ok ? "Live activity cleared." : "Reset failed.");
   }
 
   return (
@@ -48,11 +48,11 @@ export default function Admin() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-white">Administration</h1>
-          <p className="text-sm text-slate-400">Accounts, roles and demo controls. Only admins can see this page.</p>
+          <p className="text-sm text-slate-400">Accounts, roles and system controls. Only admins can see this page.</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/phone" className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/5">Phone simulators</Link>
-          <button onClick={reset} className="rounded-lg border border-red-500/40 px-4 py-2 text-sm text-red-300 hover:bg-red-500/10">↺ Reset demo</button>
+          <Link href="/phone" className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/5">Field channels</Link>
+          <button onClick={reset} className="rounded-lg border border-red-500/40 px-4 py-2 text-sm text-red-300 hover:bg-red-500/10">↺ Clear live activity</button>
         </div>
       </header>
       {msg && <p role="status" className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">{msg}</p>}

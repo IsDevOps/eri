@@ -1,6 +1,6 @@
 /**
- * Seeds the synthetic, non-partisan demo: "Demo State" -> Eriwa LGA -> 4 wards -> 40 polling units.
- * Also renders demo EC8A sheets (PNG) and demo collation-centre audio (macOS `say`).
+ * Seeds the sample election: "Ayelu State" -> Eriwa LGA -> 4 wards -> 40 polling units (fictional, non-partisan, parties A–D).
+ * Also renders sample EC8A sheets (PNG) and collation-centre recordings (macOS `say`).
  *   npm run seed
  */
 import { execFileSync } from "node:child_process";
@@ -15,7 +15,7 @@ import { SCHEMA_SQL } from "../src/lib/schema";
 import { checksum, encodeResultSms } from "../src/lib/sms-codec";
 
 const ROOT = process.cwd();
-// SEED_KEEP_ASSETS=1 (used in Docker, where macOS `say` and fonts are unavailable): keep the shipped demo PNG/WAV files
+// SEED_KEEP_ASSETS=1 (used in Docker, where macOS `say` and fonts are unavailable): keep the shipped sample PNG/WAV files
 // and only (re)compute their hashes instead of re-rendering them.
 const KEEP_ASSETS = process.env.SEED_KEEP_ASSETS === "1";
 const sha = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
@@ -42,7 +42,7 @@ const spokenTally = (t: Tally) => PARTIES.map((p) => `Party ${p} ${words(t[p] ??
 
 /* ---------- world ---------- */
 const WARD_NAMES = ["Ayegbe", "Obiaja", "Tudun Mata", "Ikoro"];
-const NO_WITNESS = new Set(["017", "029"]); // two polling units no witness has photographed yet (live-demo targets)
+const NO_WITNESS = new Set(["017", "029"]); // two polling units no witness has photographed yet (filled in live)
 const AMAKA_PU = "034";
 const AMAKA_PHONE = "+2348031230034";
 const LANG_CYCLE: Lang[] = ["en", "pcm", "yo", "ha", "ig"];
@@ -85,7 +85,7 @@ const sumTallies = (ts: Tally[]): Tally => {
   return out;
 };
 
-/* ---------- demo EC8A sheet renderer ---------- */
+/* ---------- sample EC8A sheet renderer ---------- */
 async function renderSheet(file: string, pu: string, ward: number, t: Tally, opts: { stamp?: string } = {}) {
   const rows = PARTIES.map(
     (p, i) => `
@@ -96,7 +96,7 @@ async function renderSheet(file: string, pu: string, ward: number, t: Tally, opt
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="680" height="760" viewBox="0 0 680 760">
     <rect width="680" height="760" fill="#fbfaf4"/>
     <rect x="30" y="30" width="620" height="700" fill="none" stroke="#222" stroke-width="3"/>
-    <text x="340" y="85" font-size="38" text-anchor="middle" font-family="Helvetica, Arial" font-weight="bold" fill="#222">FORM EC8A (SYNTHETIC DEMO)</text>
+    <text x="340" y="85" font-size="38" text-anchor="middle" font-family="Helvetica, Arial" font-weight="bold" fill="#222">FORM EC8A</text>
     <text x="340" y="120" font-size="20" text-anchor="middle" font-family="Helvetica, Arial" fill="#555">Statement of result of poll from polling unit</text>
     <text x="60" y="180" font-size="28" font-family="Helvetica, Arial" fill="#222">WARD:</text>
     <text x="170" y="182" font-size="40" font-family="'Bradley Hand','Noteworthy','Comic Sans MS',cursive" fill="#1a3a8a">${String(ward).padStart(2, "0")}</text>
@@ -117,7 +117,7 @@ async function main() {
 
   const pus = buildPUs();
   console.log("→ geography");
-  const lga = (await q<{ id: number }>("insert into lga (code, name, state) values ('ERW','Eriwa','Demo State') returning id"))[0];
+  const lga = (await q<{ id: number }>("insert into lga (code, name, state) values ('ERW','Eriwa','Ayelu State') returning id"))[0];
   const wardIds: Record<number, number> = {};
   for (let w = 1; w <= 4; w++) {
     wardIds[w] = (
@@ -136,9 +136,9 @@ async function main() {
     )[0].id;
   }
 
-  /* ---------- demo assets ---------- */
-  console.log("→ demo EC8A sheets");
-  const ecDir = path.join(ROOT, "public/demo/ec8a");
+  /* ---------- sample assets ---------- */
+  console.log("→ EC8A sheets");
+  const ecDir = path.join(ROOT, "public/assets/ec8a");
   if (!KEEP_ASSETS) rmSync(ecDir, { recursive: true, force: true });
   mkdirSync(ecDir, { recursive: true });
   const ecManifest: Record<string, { pu: string; tally: Tally; note: string; file: string }> = {};
@@ -148,11 +148,11 @@ async function main() {
     ecManifest[h] = { pu, tally, note, file };
     return h;
   };
-  const amakaSheetHash = await sheet("pu034-genuine.png", AMAKA_PU, byCode[AMAKA_PU].tally, "Genuine sheet photographed at the polling unit");
+  const amakaSheetHash = await sheet("pu034.png", AMAKA_PU, byCode[AMAKA_PU].tally, "Sheet photographed at the polling unit");
   const editedTally = { ...byCode[AMAKA_PU].tally, A: byCode[AMAKA_PU].tally.A! + 150 };
-  await sheet("pu034-edited.png", AMAKA_PU, editedTally, "Viral edited sheet: Party A inflated by 150", "forwarded many times");
-  await sheet("pu017-live.png", "017", byCode["017"].tally, "Live demo: first witness photo for PU 017");
-  await sheet("pu029-live.png", "029", byCode["029"].tally, "Live demo: first witness photo for PU 029");
+  await sheet("pu034-forwarded.png", AMAKA_PU, editedTally, "Forwarded copy: Party A inflated by 150", "forwarded many times");
+  await sheet("pu017.png", "017", byCode["017"].tally, "First witness photo for PU 017");
+  await sheet("pu029.png", "029", byCode["029"].tally, "First witness photo for PU 029");
   writeFileSync(path.join(ecDir, "manifest.json"), JSON.stringify(ecManifest, null, 2));
 
   /* ---------- witnesses & submissions ---------- */
@@ -178,7 +178,7 @@ async function main() {
           JSON.stringify(p.tally),
           source === "sms" ? encodeResultSms(p.code, p.tally) : null,
           isAmaka ? amakaSheetHash : null,
-          isAmaka ? "/demo/ec8a/pu034-genuine.png" : null,
+          isAmaka ? "/assets/ec8a/pu034.png" : null,
           source === "sms" ? null : 0.96,
         ],
       );
@@ -206,9 +206,9 @@ async function main() {
     await insertCol("ward", w, null, null, wardTotals[w]);
   }
 
-  /* ---------- live-demo audio clips (macOS `say`) ---------- */
-  console.log("→ demo audio");
-  const auDir = path.join(ROOT, "public/demo/audio");
+  /* ---------- collation recordings (macOS `say`) ---------- */
+  console.log("→ audio");
+  const auDir = path.join(ROOT, "public/assets/audio");
   if (!KEEP_ASSETS) rmSync(auDir, { recursive: true, force: true });
   mkdirSync(auDir, { recursive: true });
   const ward4 = pus.filter((p) => p.ward === 4);
@@ -254,27 +254,27 @@ async function main() {
   writeFileSync(path.join(auDir, "manifest.json"), JSON.stringify(auManifest, null, 2));
   writeFileSync(path.join(auDir, "clips.json"), JSON.stringify(clips.map((c) => ({ file: c.file, label: c.label, transcript: c.text })), null, 2));
 
-  /* ---------- demo accounts (one password for all; override with SEED_PASSWORD) ---------- */
+  /* ---------- starter accounts (one password for all; override with SEED_PASSWORD) ---------- */
   console.log("→ users");
-  const demoPw = process.env.SEED_PASSWORD ?? "eri-demo-2026";
-  const passHash = await hashPassword(demoPw);
+  const startPw = process.env.SEED_PASSWORD ?? "Eri-Trace-2026";
+  const passHash = await hashPassword(startPw);
   const TUNDE_PHONE = "+2348000003402"; // 2nd witness at PU 034 (see submission phones above)
   for (const [email, name, role, phone] of [
-    ["admin@eri.demo", "Ada Admin", "admin", null],
-    ["observer@eri.demo", "Obi Observer", "observer", null],
-    ["amaka@eri.demo", "Amaka", "witness", AMAKA_PHONE],
-    ["tunde@eri.demo", "Tunde", "witness", TUNDE_PHONE],
+    ["admin@eri.vote", "Adaeze Okafor", "admin", null],
+    ["observer@eri.vote", "Obinna Eze", "observer", null],
+    ["amaka@eri.vote", "Amaka Obi", "witness", AMAKA_PHONE],
+    ["tunde@eri.vote", "Tunde Adebayo", "witness", TUNDE_PHONE],
   ] as const) {
     await q("insert into app_user (email, name, role, pass_hash, phone, phone_verified) values ($1,$2,$3,$4,$5,$6)", [email, name, role, passHash, phone, !!phone]);
   }
 
-  /* ---------- cheat sheet for the demo ---------- */
+  /* ---------- presenter notes ---------- */
   const sms = (code: string) => encodeResultSms(code, byCode[code].tally);
   writeFileSync(
-    path.join(ROOT, "DEMO-DATA.md"),
-    `# Ẹ̀rí demo data (synthetic)
+    path.join(ROOT, "PRESENTER-NOTES.md"),
+    `# Ẹ̀rí presenter notes (fictional sample election)
 
-- Sign-ins (password \`eri-demo-2026\`): admin@eri.demo · observer@eri.demo · amaka@eri.demo · tunde@eri.demo\n- Amaka (Igbo, basic phone): \`${AMAKA_PHONE}\` — witness at PU ${AMAKA_PU}, Ward 04
+- Sign-ins (password \`Eri-Trace-2026\`): admin@eri.vote · observer@eri.vote · amaka@eri.vote · tunde@eri.vote\n- Amaka (Igbo, basic phone): \`${AMAKA_PHONE}\` — witness at PU ${AMAKA_PU}, Ward 04
 - Unwitnessed PUs to fill live: 017 (ward 02), 029 (ward 03)
 - SMS for PU 017: \`${sms("017")}\`
 - SMS for PU 029: \`${sms("029")}\`

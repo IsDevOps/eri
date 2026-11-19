@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { PARTIES, type Tally } from "./config";
 import { spokenId, wordsToNumber } from "./numbers";
+import { openaiEnabled, openaiJson } from "./providers/openai";
 
 export interface ExtractedEntry {
   level: "pu_at_ward" | "ward" | "lga" | "state";
@@ -93,28 +94,16 @@ export function extractRules(transcript: string, ctx: ExtractContext = {}): { en
   return { entries, ctx: { ward: wardCtx } };
 }
 
-/** LLM path: handles Pidgin / Hausa / Yoruba / Igbo number words and messy transcripts. */
-async function extractLLM(transcript: string, ctx: ExtractContext): Promise<ExtractedEntry[]> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const msg = await client.messages.create({
-    model: "claude-sonnet-5-5",
-    max_tokens: 1500,
-    system:
-      "You extract election collation announcements from a transcript of a collation officer (ward, LGA or state) reading results aloud (English, Nigerian Pidgin, Hausa, Yoruba or Igbo). " +
-      "Parties are the letters A, B, C, D. Return ONLY a JSON array. Each item: " +
-      '{"level":"pu_at_ward"|"ward"|"lga"|"state","ward":<number|null>,"pu":"<3-digit string|null>","tally":{"A":n,"B":n,...},"dropped":<bool>}. ' +
-      "Use level pu_at_ward for a single polling unit line read at ward collation, ward for a ward total, lga for an LGA total, state for a state total. " +
-      "Set dropped=true only if the officer says a polling unit result is cancelled/dropped/excluded. Never invent figures.",
-    messages: [
-      {
-        role: "user",
-        content: `Current ward context: ${ctx.ward ?? "unknown"}\nTranscript:\n${transcript}`,
-      },
-    ],
-  });
-  const text = msg.content.map((b) => (b.type === "text" ? b.text : "")).join("");
-  const json = text.match(/\[[\s\S]*\]/)?.[0] ?? "[]";
-  const arr = JSON.parse(json) as Array<{ level: ExtractedEntry["level"]; ward?: number | null; pu?: string | null; tally?: Tally; dropped?: boolean }>;
+const EXTRACT_PROMPT =
+  "You extract election collation announcements from a transcript of a collation officer (ward, LGA or state) reading results aloud (English, Nigerian Pidgin, Hausa, Yoruba or Igbo). " +
+  "Parties are the letters A, B, C, D. Return ONLY a JSON array. Each item: " +
+  '{"level":"pu_at_ward"|"ward"|"lga"|"state","ward":<number|null>,"pu":"<3-digit string|null>","tally":{"A":n,"B":n,...},"dropped":<bool>}. ' +
+  "Use level pu_at_ward for a single polling unit line read at ward collation, ward for a ward total, lga for an LGA total, state for a state total. " +
+  "Set dropped=true only if the officer says a polling unit result is cancelled/dropped/excluded. Never invent figures.";
+
+type Raw = { level: ExtractedEntry["level"]; ward?: number | null; pu?: string | null; tally?: Tally; dropped?: boolean };
+
+function toEntries(arr: Raw[]): ExtractedEntry[] {
   return arr.map((e) => ({
     level: e.level,
     ward: e.ward ?? undefined,
@@ -124,12 +113,38 @@ async function extractLLM(transcript: string, ctx: ExtractContext): Promise<Extr
   }));
 }
 
+const userMsg = (transcript: string, ctx: ExtractContext) => `Current ward context: ${ctx.ward ?? "unknown"}\nTranscript:\n${transcript}`;
+
+/** LLM path: handles Pidgin / Hausa / Yoruba / Igbo number words and messy transcripts. */
+async function extractClaude(transcript: string, ctx: ExtractContext): Promise<ExtractedEntry[]> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const msg = await client.messages.create({
+    model: "claude-sonnet-5-5",
+    max_tokens: 1500,
+    system: EXTRACT_PROMPT,
+    messages: [{ role: "user", content: userMsg(transcript, ctx) }],
+  });
+  const text = msg.content.map((b) => (b.type === "text" ? b.text : "")).join("");
+  return toEntries(JSON.parse(text.match(/\[[\s\S]*\]/)?.[0] ?? "[]") as Raw[]);
+}
+
+/** OpenAI JSON mode returns an object, so the array is requested under "entries". */
+async function extractOpenAI(transcript: string, ctx: ExtractContext): Promise<ExtractedEntry[]> {
+  const out = (await openaiJson(
+    EXTRACT_PROMPT.replace("Return ONLY a JSON array. Each item:", 'Return ONLY a JSON object {"entries":[...]}. Each item of entries:'),
+    userMsg(transcript, ctx),
+    1500,
+  )) as { entries?: Raw[] };
+  return toEntries(out.entries ?? []);
+}
+
 export async function extractFigures(transcript: string, ctx: ExtractContext = {}) {
-  if (process.env.ANTHROPIC_API_KEY) {
+  const engine = process.env.ANTHROPIC_API_KEY ? ("claude" as const) : openaiEnabled() ? ("openai" as const) : null;
+  if (engine) {
     try {
-      const entries = await extractLLM(transcript, ctx);
+      const entries = engine === "claude" ? await extractClaude(transcript, ctx) : await extractOpenAI(transcript, ctx);
       const ward = [...entries].reverse().find((e) => e.ward)?.ward ?? ctx.ward;
-      return { entries, ctx: { ward }, engine: "claude" as const };
+      return { entries, ctx: { ward }, engine };
     } catch {
       /* fall through to rules */
     }

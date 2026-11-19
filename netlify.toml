@@ -4,5 +4,5 @@
 [build.environment]
   NODE_VERSION = "22"
   # Required in Netlify → Site configuration → Environment variables (not here):
-  #   DATABASE_URL  AUTH_SECRET  COOKIE_SECURE=1  DEMO_LOGINS (optional)
+  #   DATABASE_URL  AUTH_SECRET  COOKIE_SECURE=1  SHOW_SMS_CODES (optional)
   # See README → Deploy.

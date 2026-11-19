@@ -1,11 +1,11 @@
-// Synthetic, strictly non-partisan demo configuration.
+// Strictly non-partisan configuration: neutral party codes A–D.
 // Parties are neutral letters so the SMS format stays short: R 012 A120 B85 C40 #7F3
 export const PARTIES = ["A", "B", "C", "D"] as const;
 export type Party = (typeof PARTIES)[number];
 export type Tally = Partial<Record<Party, number>>;
 
-export const SHORTCODE = "32737"; // demo SMS shortcode
-export const USSD_CODE = "*347*PU#"; // demo USSD service code
+export const SHORTCODE = "32737"; // SMS shortcode
+export const USSD_CODE = "*347*PU#"; // USSD service code
 
 export const LANGS = ["en", "pcm", "ha", "yo", "ig"] as const;
 export type Lang = (typeof LANGS)[number];

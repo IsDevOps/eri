@@ -1,9 +1,13 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
 import { PARTIES, fmt, type Tally } from "@/lib/config";
 import { usePoll } from "@/lib/client";
+import { SPEECH_LANGS, speechSupported, startBrowserSpeech } from "@/lib/browser-speech";
+import { SegmentBuffer, segment } from "@/lib/segment";
 import type { TreeNode } from "@/lib/reconcile";
+
+const noopSubscribe = () => () => {};
 
 interface Clip {
   file: string;
@@ -15,11 +19,6 @@ interface Heard {
   text: string;
   entries: { entry: { level: string; ward?: number; pu?: string; tally?: Tally; dropped?: boolean }; result: { recorded?: boolean; skipped?: string; alerts?: { message: string }[] } }[];
   engine: string;
-}
-
-/** Split a transcript into announcement segments so each hop is reconciled as soon as it is spoken. */
-function segment(text: string): string[] {
-  return text.split(/(?=\b(?:ward|polling unit|local government|lga total|state total)\b)/i).map((s) => s.trim()).filter(Boolean);
 }
 
 export default function LiveEar() {
@@ -35,9 +34,15 @@ export default function LiveEar() {
   const hid = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recRef = useRef<{ stop: () => void } | null>(null);
+  const speechRef = useRef<{ stop: () => void } | null>(null);
+  const queueRef = useRef<Promise<void>>(Promise.resolve());
+  const canSpeech = useSyncExternalStore(noopSubscribe, speechSupported, () => false);
+  const [listening, setListening] = useState(false);
+  const [interim, setInterim] = useState("");
+  const [lang, setLang] = useState("en-NG");
 
   useEffect(() => {
-    fetch("/demo/audio/clips.json").then((r) => (r.ok ? r.json() : [])).then(setClips).catch(() => {});
+    fetch("/assets/audio/clips.json").then((r) => (r.ok ? r.json() : [])).then(setClips).catch(() => {});
   }, []);
 
   const ingest = useCallback(async (text: string) => {
@@ -62,7 +67,7 @@ export default function LiveEar() {
     setRevealed("");
     ctxRef.current = {};
     try {
-      const blob = await (await fetch(`/demo/audio/${c.file}`)).blob();
+      const blob = await (await fetch(`/assets/audio/${c.file}`)).blob();
       const fd = new FormData();
       fd.set("file", new File([blob], c.file, { type: "audio/wav" }));
       const r = await fetch("/api/ear/transcribe", { method: "POST", body: fd });
@@ -170,6 +175,42 @@ export default function LiveEar() {
     }
   };
 
+  /** Free option: the browser's own speech recognition. No server key needed. Phrases are buffered into whole announcements. */
+  const toggleSpeech = () => {
+    if (listening) {
+      speechRef.current?.stop();
+      return;
+    }
+    setError(null);
+    ctxRef.current = {};
+    const buf = new SegmentBuffer();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const release = (segs: string[]) => {
+      for (const s of segs) {
+        queueRef.current = queueRef.current.then(() => ingest(s)).catch((e) => setError((e as Error).message));
+      }
+    };
+    setListening(true);
+    speechRef.current = startBrowserSpeech({
+      lang,
+      onInterim: setInterim,
+      onFinal: (t) => {
+        if (!t) return;
+        setRevealed((p) => (p ? p + " " : "") + t);
+        release(buf.push(t));
+        clearTimeout(timer);
+        timer = setTimeout(() => release(buf.flush()), 4000); // a pause means the announcement is finished
+      },
+      onError: setError,
+      onEnd: () => {
+        clearTimeout(timer);
+        release(buf.flush());
+        setInterim("");
+        setListening(false);
+      },
+    });
+  };
+
   const wards = tree?.children[0]?.children ?? [];
 
   return (
@@ -197,14 +238,36 @@ export default function LiveEar() {
                   <span className="text-slate-200">{c.label}</span>
                 </button>
               ))}
-              {!clips.length && <p className="text-sm text-slate-500">No demo clips yet. Run <code>npm run seed</code>.</p>}
+              {!clips.length && <p className="text-sm text-slate-500">No recordings yet. Run <code>npm run seed</code>.</p>}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
-                onClick={toggleMic}
-                className={`rounded-lg px-3 py-2 text-sm font-medium ${recording ? "animate-pulse bg-red-500 text-white" : "bg-white/10 text-slate-200 hover:bg-white/15"}`}
+                onClick={toggleSpeech}
+                disabled={!canSpeech || recording}
+                title={canSpeech ? "Uses your browser's speech recognition — no API key needed" : "This browser has no speech recognition. Use Chrome or Edge."}
+                className={`rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-40 ${listening ? "animate-pulse bg-red-500 text-white" : "bg-sky-500/20 text-sky-200 hover:bg-sky-500/30"}`}
               >
-                {recording ? "● Listening… tap to stop" : "🎙 Listen live (mic)"}
+                {listening ? "● Listening… tap to stop" : "🎙 Listen live (browser, free)"}
+              </button>
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                disabled={listening}
+                aria-label="Speech language"
+                className="rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-slate-200 disabled:opacity-40"
+              >
+                {SPEECH_LANGS.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={toggleMic}
+                disabled={listening}
+                className={`rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-40 ${recording ? "animate-pulse bg-red-500 text-white" : "bg-white/10 text-slate-200 hover:bg-white/15"}`}
+              >
+                {recording ? "● Recording… tap to stop" : "🎙 Listen live (server transcription)"}
               </button>
               <label className="cursor-pointer rounded-lg bg-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/15">
                 Upload audio
@@ -232,13 +295,18 @@ export default function LiveEar() {
                 Reconcile
               </button>
             </div>
+            <p className="mt-2 text-xs text-slate-500">
+              Browser listening is free (Chrome / Edge, internet needed, English works best). Say each announcement as “Ward 4. Party A 3,120. Party B 400.” — server transcription needs an
+              OpenAI key but handles Hausa, Yorùbá and Igbo better.
+            </p>
             {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-sm text-red-300">{error}</p>}
           </div>
 
           <div className="rounded-xl border border-white/10 bg-[#121821] p-4">
             <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-300">Live transcript</h2>
             <p className="min-h-[5rem] whitespace-pre-wrap text-sm leading-relaxed text-slate-300">
-              {revealed || <span className="text-slate-600">Waiting for the collation centre…</span>}
+              {revealed || (!interim && <span className="text-slate-600">Waiting for the collation centre…</span>)}
+              {interim && <span className="italic text-slate-500"> {interim}</span>}
               {busy && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-sky-400 align-middle" />}
             </p>
           </div>
@@ -299,7 +367,7 @@ export default function LiveEar() {
                       <span>
                         {e.entry.level === "pu_at_ward" ? `PU ${e.entry.pu} read at ward` : e.entry.level === "ward" ? `Ward ${String(e.entry.ward).padStart(2, "0")} total` : e.entry.level === "lga" ? "LGA total" : "State total"}
                       </span>
-                      <span>{h.engine === "claude" ? "AI extract" : "rule extract"}</span>
+                      <span>{h.engine === "rules" ? "rule extract" : "AI extract"}</span>
                     </div>
                     <div className="mt-1 font-mono text-xs tabular-nums text-slate-200">
                       {e.entry.tally ? PARTIES.map((p) => `${p} ${fmt(e.entry.tally![p] ?? 0)}`).join("  ") : e.entry.dropped ? "dropped" : ""}

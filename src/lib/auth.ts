@@ -36,6 +36,9 @@ export async function getUser(): Promise<SessionUser | null> {
   return u && !u.disabled ? toUser(u) : null;
 }
 
+/** While SMS delivery is simulated (no gateway keys), the verification code is returned to the client so sign-up can finish. */
+export const showSmsCodes = (): boolean => process.env.SHOW_SMS_CODES === "1" || process.env.DEMO_LOGINS === "1";
+
 export async function startSession(u: { id: number; role: Role }) {
   (await cookies()).set(COOKIE, signToken({ uid: u.id, role: u.role }), {
     httpOnly: true,

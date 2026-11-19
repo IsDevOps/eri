@@ -74,7 +74,7 @@ async function handle(req: Request) {
   line("Eri evidence pack");
   doc.fontSize(10).font("Helvetica").fillColor("#555");
   line("Eri (Yoruba: witness, proof) - trace every vote from the polling unit to the declaration");
-  line(`Generated ${new Date().toISOString()}  -  SYNTHETIC DEMO DATA (Eriwa LGA, Demo State)`);
+  line(`Generated ${new Date().toISOString()}  -  Eriwa LGA, Ayelu State`);
   doc.fontSize(9.5).fillColor("#222");
 
   h(`Scope: ${scope.label}${wardNode ? ` (${(wardNode as TreeNode).label.split(" · ")[0]})` : ""}`);
@@ -112,7 +112,7 @@ async function handle(req: Request) {
   if (scope.level === "pu") {
     const photos = subs.filter((s) => s.photo_path).slice(0, 3);
     for (const s of photos) {
-      const rel = s.photo_path!.startsWith("/demo") ? path.join(process.cwd(), "public", s.photo_path!) : s.photo_path!;
+      const rel = s.photo_path!.startsWith("/assets") ? path.join(process.cwd(), "public", s.photo_path!) : s.photo_path!;
       if (existsSync(rel)) {
         doc.addPage();
         h(`Witness photo - PU ${s.code} - ${mask(s.phone)} - sha256:${s.photo_hash}`);

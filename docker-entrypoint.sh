@@ -11,7 +11,7 @@ npx tsx scripts/ensure-seed.ts
 rc=$?
 set -e
 if [ "$rc" -eq 10 ]; then
-  echo "→ empty database, seeding demo data"
+  echo "→ empty database, seeding the database"
   SEED_KEEP_ASSETS=1 npx tsx scripts/seed.ts
 elif [ "$rc" -ne 0 ]; then
   exit "$rc"

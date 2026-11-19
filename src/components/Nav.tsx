@@ -25,7 +25,7 @@ const LINKS: Record<Role | "guest", { href: string; label: string }[]> = {
     { href: "/admin", label: "Admin" },
     { href: "/dashboard", label: "Proof Tree" },
     { href: "/ear", label: "Live Ear" },
-    { href: "/phone", label: "Phone simulators" },
+    { href: "/phone", label: "Field channels" },
   ],
 };
 const ROLE_LABEL: Record<Role, string> = { admin: "Admin", observer: "Observer", witness: "Witness" };
@@ -61,7 +61,7 @@ export function Nav({ user }: { user: NavUser | null }) {
         </nav>
         <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
           <span className="hidden items-center gap-2 lg:flex">
-            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> synthetic demo data
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" /> Live · Eriwa LGA
           </span>
           {user ? (
             <>
@@ -78,7 +78,7 @@ export function Nav({ user }: { user: NavUser | null }) {
                 Sign in
               </Link>
               <Link href="/register" className="rounded-md bg-sky-500 px-3 py-1.5 font-medium text-white hover:bg-sky-400">
-                Join as a witness
+                Create an account
               </Link>
             </>
           )}

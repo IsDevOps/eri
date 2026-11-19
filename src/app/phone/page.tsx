@@ -121,7 +121,7 @@ export default function Phones() {
   const [chat, setChat] = useState<{ from: "me" | "bot"; text?: string; img?: string; tone?: string }[]>([]);
   const [wa, setWa] = useState(false);
   useEffect(() => {
-    fetch("/demo/ec8a/manifest.json")
+    fetch("/assets/ec8a/manifest.json")
       .then((r) => (r.ok ? r.json() : {}))
       .then((m: Record<string, Sheet>) => setSheets(Object.values(m)))
       .catch(() => {});
@@ -153,13 +153,13 @@ export default function Phones() {
     setWa(false);
   };
   const sendSheet = async (s: Sheet, mode: "submit" | "check") => {
-    const url = `/demo/ec8a/${s.file}`;
+    const url = `/assets/ec8a/${s.file}`;
     sendImage(await (await fetch(url)).blob(), s.file, url, mode);
   };
 
   const reset = async () => {
-    if (!confirm("Rewind all live-demo changes (collation, alerts, SMS, live submissions)?")) return;
-    await fetch("/api/demo/reset", { method: "POST" });
+    if (!confirm("Clear live activity (collation, alerts, SMS, submissions)?")) return;
+    await fetch("/api/admin/reset", { method: "POST" });
     setChat([]);
     setUssd(null);
     reloadAgent();
@@ -172,12 +172,12 @@ export default function Phones() {
           <p className="text-sm uppercase tracking-widest text-sky-300">Signature features 3, 4 &amp; 5</p>
           <h1 className="mt-1 text-3xl font-semibold text-white">Works on any phone, any network</h1>
           <p className="mt-2 max-w-3xl text-slate-400">
-            Simulators for the channels judges can&apos;t see on a projector: SMS to shortcode {SHORTCODE} over 2G, a USSD check, and a WhatsApp bot that
+            Field channels: SMS to shortcode {SHORTCODE} over 2G, a USSD check, and a WhatsApp bot that
             reads handwriting. Real gateways (Africa&apos;s Talking) plug into <code>/api/sms</code> and <code>/api/ussd</code> unchanged.
           </p>
         </div>
         <button onClick={reset} className="rounded-lg border border-white/15 px-3 py-2 text-sm text-slate-300 hover:bg-white/10">
-          ↺ Reset demo
+          ↺ Clear live activity
         </button>
       </div>
 
@@ -284,7 +284,7 @@ export default function Phones() {
             {sheets.map((s) => (
               <div key={s.file} className="flex items-center gap-2 rounded bg-white/5 p-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/demo/ec8a/${s.file}`} alt="" className="h-9 w-8 rounded object-cover" />
+                <img src={`/assets/ec8a/${s.file}`} alt="" className="h-9 w-8 rounded object-cover" />
                 <div className="min-w-0 flex-1 text-[11px] leading-tight text-slate-300">
                   <div className="font-mono">{s.file}</div>
                 </div>

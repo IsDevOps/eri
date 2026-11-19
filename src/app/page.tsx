@@ -24,7 +24,7 @@ export default async function Landing() {
             </Link>
           ) : (
             <>
-              <Link href="/register" className="rounded-lg bg-sky-500 px-5 py-2.5 font-medium text-white hover:bg-sky-400">Join as a witness</Link>
+              <Link href="/register" className="rounded-lg bg-sky-500 px-5 py-2.5 font-medium text-white hover:bg-sky-400">Create an account</Link>
               <Link href="/login" className="rounded-lg border border-white/15 px-5 py-2.5 text-slate-200 hover:bg-white/5">Sign in</Link>
             </>
           )}
@@ -39,7 +39,7 @@ export default async function Landing() {
           <p className="mt-2 text-xs text-slate-500">On a basic phone, dial <span className="font-mono">*347*PU#</span> for the same answer.</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-[#121821] p-5">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Polling units witnessed (synthetic demo)</div>
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Polling units witnessed</div>
           <div className="mt-1 text-3xl font-semibold tabular-nums text-white">
             {s?.witnessed}/{s?.pus}
           </div>
@@ -73,7 +73,7 @@ export default async function Landing() {
           {[
             ["Citizens (public)", "Check any polling unit by code or USSD, and follow the public results trail: what was announced at each hop and whether it traces to the polling-unit (EC8A) results. Unofficial; INEC declares results.", "No account"],
             ["Witnesses", "Sign in, confirm your phone, submit your polling unit’s EC8A result by photo or figures, get SMS (and voice) alerts in your language if it changes after it leaves the polling unit.", "Self-register"],
-            ["Observers", "See the full Proof Tree, run Live Ear on collation audio, and download tribunal evidence packs.", "Created by an admin"],
+            ["Observers", "See the full Proof Tree, run Live Ear on collation audio, and download tribunal evidence packs.", "Self-register"],
           ].map(([t, d, tag]) => (
             <div key={t} className="rounded-xl border border-white/10 bg-[#121821] p-5">
               <div className="flex items-center justify-between">
