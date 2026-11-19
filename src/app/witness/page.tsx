@@ -32,7 +32,7 @@ export default function WitnessPortal() {
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <div className="space-y-6">
             <Submit onDone={reload} />
-            <Walls subs={me.submissions} />
+            <MyPollingUnits subs={me.submissions} />
           </div>
           <div className="space-y-6">
             <Prefs prefs={me.prefs!} onDone={reload} />
@@ -108,7 +108,7 @@ function Submit({ onDone }: { onDone: () => void }) {
 
   return (
     <section className={card}>
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-300">Submit your wall (EC8A)</h2>
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-300">Submit your polling unit’s result (EC8A)</h2>
       <form onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-5 gap-2">
           <label className="col-span-1 text-xs text-slate-400">
@@ -136,11 +136,11 @@ function Submit({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Walls({ subs }: { subs: Me["submissions"] }) {
+function MyPollingUnits({ subs }: { subs: Me["submissions"] }) {
   return (
     <section className={card}>
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-300">My walls</h2>
-      {!subs.length && <p className="text-sm text-slate-500">You haven’t submitted a wall yet.</p>}
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-300">My polling units</h2>
+      {!subs.length && <p className="text-sm text-slate-500">You haven’t submitted a result yet.</p>}
       <ul className="space-y-3">
         {subs.map((s) => (
           <li key={s.code} className="rounded-lg border border-white/10 bg-[#0f141b] p-3">
@@ -182,7 +182,7 @@ function Alerts({ msgs }: { msgs: Me["messages"] }) {
   return (
     <section className={card}>
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-300">Messages sent to me</h2>
-      {!msgs.length && <p className="text-sm text-slate-500">All quiet. If a number on your wall changes, you’ll be told here and by SMS.</p>}
+      {!msgs.length && <p className="text-sm text-slate-500">All quiet. If your polling unit’s result changes after it leaves the polling unit, you’ll be told here and by SMS.</p>}
       <ul className="space-y-2">
         {msgs.map((m) => (
           <li key={m.id} className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-slate-200">

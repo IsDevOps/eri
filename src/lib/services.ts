@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { USSD_CODE, tallyEq, tallyKey, type Lang, type Tally, PARTIES } from "./config";
 import { q, q1 } from "./db";
@@ -71,15 +72,27 @@ export async function submitResult(o: SubmitOpts) {
   return { ok: true as const, agree: node?.witnesses ?? 1, node };
 }
 
+/** Photo storage. UPLOAD_DIR overrides; read-only hosts (serverless) fall back to the temp dir, which does not persist. */
+async function uploadDir(): Promise<string> {
+  const wanted = process.env.UPLOAD_DIR || path.join(process.cwd(), "data/uploads");
+  try {
+    await mkdir(wanted, { recursive: true });
+    return wanted;
+  } catch {
+    const tmp = path.join(os.tmpdir(), "eri-uploads");
+    await mkdir(tmp, { recursive: true });
+    return tmp;
+  }
+}
+
 export async function ingestPhoto(buf: Buffer, mime: string, phone: string, source: "photo" | "whatsapp", lang?: Lang) {
   const reading = await readSheet(buf, mime);
   if (!reading.puCode) return { ok: false as const, error: "Could not read the polling-unit code on the sheet." };
   if (reading.confidence < 0.6) return { ok: false as const, error: "Photo too unclear. Please retake it flat and well lit." };
   const hash = sha256(buf);
-  const dir = path.join(process.cwd(), "data/uploads");
-  await mkdir(dir, { recursive: true });
+  const dir = await uploadDir();
   const ext = (mime.split("/")[1] ?? "bin").replace(/[^a-z0-9]/gi, "").slice(0, 5) || "bin";
-  const file = path.join(dir, `${hash}.${ext}`);
+  const file = path.join(/*turbopackIgnore: true*/ dir, `${hash}.${ext}`); // runtime upload path, not a bundle dependency
   await writeFile(file, buf);
   const res = await submitResult({
     puCode: reading.puCode,
@@ -228,13 +241,13 @@ export async function syncAlarms() {
         notify(notifyPus, id, node.dropped ? "alarm_pu_dropped" : "alarm_pu_changed", (pu) => ({
           pu: pu.code,
           ward: wardNo,
-          wall: tallyStr(node.expected ?? {}),
+          ec8a: tallyStr(node.expected ?? {}),
           read: tallyStr(node.readAtWard ?? {}),
         }));
     } else if (node.level === "ward") {
       kind = "ward_inflated";
       wardId = node.refId;
-      fp = `${kind}:${node.refId}:${tallyKey(node.announced ?? {})}:${tallyKey(node.wallSum)}`;
+      fp = `${kind}:${node.refId}:${tallyKey(node.announced ?? {})}:${tallyKey(node.witnessedSum)}`;
       notifyPus = node.children.map((c) => c.refId);
       send = (id) =>
         notify(notifyPus, id, "alarm_ward_inflated", (pu) => ({
@@ -242,7 +255,7 @@ export async function syncAlarms() {
           ward: pu.ward,
           party: worst,
           announced: node.announced?.[worst as keyof Tally] ?? 0,
-          wallsum: node.wallSum[worst as keyof Tally] ?? 0,
+          ec8asum: node.witnessedSum[worst as keyof Tally] ?? 0,
           gap: Math.abs(node.gap?.[worst as keyof Tally] ?? 0),
         }));
     } else if (node.level === "lga") {
@@ -255,7 +268,7 @@ export async function syncAlarms() {
           pu: pu.code,
           party: worst,
           announced: node.announced?.[worst as keyof Tally] ?? 0,
-          wallsum: node.expected?.[worst as keyof Tally] ?? 0,
+          ec8asum: node.expected?.[worst as keyof Tally] ?? 0,
         }));
     } else continue;
     const row = await q1<{ id: number }>(
@@ -302,9 +315,9 @@ export async function ussdCheck(puCodeRaw: string, lang: Lang): Promise<string> 
   if (!n) return t("ussd_unknown", lang, { pu: code });
   const base = { pu: code, ward: n.wardNumber, n: n.witnesses ?? 0, d: n.disagreeing ?? 0, tally: tallyStr(n.expected ?? {}) };
   if (!n.witnesses) return t("ussd_none", lang, base);
-  if (n.dropped) return t("ussd_dropped", lang, { ...base, wall: tallyStr(n.expected ?? {}) });
+  if (n.dropped) return t("ussd_dropped", lang, { ...base, ec8a: tallyStr(n.expected ?? {}) });
   if (n.readAtWard && n.expected && !tallyEq(n.readAtWard, n.expected))
-    return t("ussd_changed", lang, { ...base, wall: tallyStr(n.expected), read: tallyStr(n.readAtWard) });
+    return t("ussd_changed", lang, { ...base, ec8a: tallyStr(n.expected), read: tallyStr(n.readAtWard) });
   if (n.disagreeing) return t("ussd_contested", lang, base);
   if (n.readAtWard) return t("ussd_verified", lang, base);
   return t("ussd_pending", lang, base);

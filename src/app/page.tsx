@@ -49,8 +49,8 @@ export default async function Landing() {
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-200">Designed for the whole chain</p><h2 className="eri-section-heading mt-1 text-2xl font-semibold text-white">One clear action for every person involved.</h2></div><span className="text-sm text-slate-500">Evidence before amplification.</span></div>
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            ["Citizens (public)", "Check any polling unit by code or USSD. See the wall, whether it was read out unchanged, and how many witnesses vouch for it.", "No account"],
-            ["Witnesses", "Sign in, confirm your phone, submit your wall by photo or figures, get SMS (and voice) alerts in your language if it changes.", "Self-register"],
+            ["Citizens (public)", "Check any polling unit by code or USSD, and follow the public results trail: what was announced at each hop and whether it traces to the polling-unit (EC8A) results. Unofficial; INEC declares results.", "No account"],
+            ["Witnesses", "Sign in, confirm your phone, submit your polling unit’s EC8A result by photo or figures, get SMS (and voice) alerts in your language if it changes after it leaves the polling unit.", "Self-register"],
             ["Observers", "See the full Proof Tree, run Live Ear on collation audio, and download tribunal evidence packs.", "Created by an admin"],
           ].map(([t, d, tag]) => (
             <div key={t} className="rounded-2xl border border-white/10 bg-[#121a25] p-5 transition hover:-translate-y-0.5 hover:border-sky-300/25">
