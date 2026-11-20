@@ -34,7 +34,7 @@ export async function handleSms(fromRaw: string, text: string): Promise<string> 
         : t("sms_unknown_pu", lang, { pu: parsed.puCode });
     } else if (parsed.reason === "checksum" && parsed.puCode) {
       // Echo back the corrected message so a garbled 2G text is cheap to fix.
-      const m = body.toUpperCase().match(/^R\s*\d{1,3}\s+((?:[A-Z]{1,4}\d+\s*)+)#/);
+      const m = body.toUpperCase().match(/^R\s*\d{1,3}\s+((?:[A-Z]{1,6}\d+\s*)+)#/);
       const tally: Tally = {};
       for (const tok of (m?.[1] ?? "").trim().split(/\s+/)) {
         const tm = tok.match(/^([A-Z]+)(\d+)$/);

@@ -7,7 +7,7 @@ import { t } from "./i18n";
 import { wit } from "./plural";
 import { sendMessage } from "./providers/sms";
 import { readSheet, sha256 } from "./providers/vision";
-import { buildTree, walk, type TreeNode } from "./reconcile";
+import { buildTree, buildTreeFromRows, loadRows, walk, type TreeNode } from "./reconcile";
 import type { ExtractedEntry } from "./extract";
 
 export const normPhone = (p: string) => p.replace(/[^\d+]/g, "");
@@ -71,6 +71,25 @@ export async function submitResult(o: SubmitOpts) {
   await syncAlarms();
   const node = await puNode(o.puCode);
   return { ok: true as const, agree: node?.witnesses ?? 1, node };
+}
+
+/**
+ * Practice run: what would happen to this polling unit's status if this witness submitted these figures?
+ * Nothing is written, no alert is raised and nobody is messaged.
+ */
+export async function previewResult(puCode: string, tally: Tally, phone: string) {
+  const rows = await loadRows();
+  const pu = rows.pus.find((p) => p.code === puCode);
+  if (!pu) return { ok: false as const, reason: "unknown_pu" as const };
+  const who = normPhone(phone);
+  const others = rows.subs.filter((s) => s.pu_id === pu.id && s.phone !== who).length;
+  rows.subs = [...rows.subs.filter((s) => !(s.pu_id === pu.id && s.phone === who)), { pu_id: pu.id, phone: who, source: "sms", results: tally, created_at: new Date() }];
+  let node: TreeNode | null = null;
+  walk(buildTreeFromRows(rows), (n) => {
+    if (n.level === "pu" && n.code === puCode) node = n;
+  });
+  const found = node as TreeNode | null;
+  return { ok: true as const, others, agree: found?.witnesses ?? 1, status: found?.status ?? "unverified", reason: found?.reason ?? "" };
 }
 
 /** Photo storage. UPLOAD_DIR overrides; read-only hosts (serverless) fall back to the temp dir, which does not persist. */
@@ -229,7 +248,7 @@ export async function syncAlarms() {
     let puId: number | null = null;
     let notifyPus: number[] = [];
     let send: ((alertId: number) => Promise<number>) | null = null;
-    const worst = node.gap ? [...PARTIES].sort((a, b) => Math.abs(node.gap![b] ?? 0) - Math.abs(node.gap![a] ?? 0))[0] : "A";
+    const worst = node.gap ? [...PARTIES].sort((a, b) => Math.abs(node.gap![b] ?? 0) - Math.abs(node.gap![a] ?? 0))[0] : PARTIES[0];
     if (node.level === "pu") {
       kind = node.dropped ? "pu_dropped" : "pu_changed";
       puId = node.refId;

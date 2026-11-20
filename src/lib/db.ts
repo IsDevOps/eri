@@ -1,5 +1,7 @@
 import { loadEnvConfig } from "@next/env";
 import { Pool, type QueryResultRow } from "pg";
+import { currentParties, setParties, type PartyDef } from "./config";
+import { PARTY_TABLE_SQL } from "./schema";
 
 // Load .env.local for standalone scripts as well as Next.js.
 loadEnvConfig(process.cwd());
@@ -31,11 +33,50 @@ if (process.env.NODE_ENV !== "production") {
 /** In production a missing DATABASE_URL must fail loudly, not silently fall back to localhost (a common hosting mistake). */
 export const dbUrlMissing = () => process.env.NODE_ENV === "production" && !process.env.DATABASE_URL;
 
+/* ---- parties: the admin-managed list lives in the `party` table; keep the in-memory registry (config.ts) fresh ---- */
+const PARTY_TTL_MS = 5_000;
+let partiesAt = 0;
+let partiesLoading: Promise<void> | null = null;
+
+async function loadParties() {
+  const read = () => pool.query<PartyDef>("select key, acronym, name from party where active order by sort, key");
+  try {
+    let res;
+    try {
+      res = await read();
+    } catch (e) {
+      if ((e as { code?: string }).code !== "42P01") throw e;
+      // Database created before parties were configurable: add the table and the default four.
+      await pool.query(PARTY_TABLE_SQL);
+      res = await read();
+    }
+    if (res.rows.length) setParties(res.rows);
+  } catch (e) {
+    console.error("Could not load parties:", (e as Error).message); // the caller's own query will surface a dead database
+  }
+}
+
+/** Reload the party registry (cached for a few seconds; pass force after a change). */
+export async function refreshParties(force = false) {
+  if (!force && Date.now() - partiesAt < PARTY_TTL_MS) return;
+  partiesLoading ??= loadParties().finally(() => {
+    partiesAt = Date.now();
+    partiesLoading = null;
+  });
+  await partiesLoading;
+}
+
+export async function getPartyDefs(): Promise<PartyDef[]> {
+  if (!dbUrlMissing()) await refreshParties();
+  return currentParties();
+}
+
 export async function q<T extends QueryResultRow = QueryResultRow>(
   text: string,
   params: unknown[] = [],
 ): Promise<T[]> {
   if (dbUrlMissing()) throw new Error("DATABASE_URL is not set. Add it to the host's environment variables (see README → Deploy).");
+  await refreshParties();
   const res = await pool.query<T>(text, params);
   return res.rows;
 }

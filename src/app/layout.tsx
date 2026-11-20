@@ -2,7 +2,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DeniedNotice } from "@/components/Nav";
+import PartyBoot from "@/components/PartyBoot";
 import { getUser } from "@/lib/auth";
+import { getPartyDefs } from "@/lib/db";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 
@@ -16,6 +18,7 @@ export default async function RootLayout({
   children,
 }: LayoutProps<"/">) {
   const user = await getUser();
+  const parties = await getPartyDefs();
 
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
@@ -28,6 +31,7 @@ export default async function RootLayout({
       </head>
 
       <body className="min-h-full bg-[#0b0f14] text-slate-200">
+        <PartyBoot parties={parties} />
         <Suspense>
           <DeniedNotice />
         </Suspense>

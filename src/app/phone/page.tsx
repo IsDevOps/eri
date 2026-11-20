@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { LANGS, LANG_NAMES, USSD_CODE, SHORTCODE, partyName, tallyText } from "@/lib/config";
+import { LANGS, LANG_NAMES, PARTIES, USSD_CODE, SHORTCODE, partyName, tallyText } from "@/lib/config";
 import { usePoll } from "@/lib/client";
 import { witVerb } from "@/lib/plural";
 
@@ -67,7 +67,7 @@ export default function Phones() {
   /* ---------- polling agent: SMS ---------- */
   const { data: agentMsgs, reload: reloadAgent } = usePoll<Msg[]>(`/api/outbox?phone=${encodeURIComponent(AGENT)}`, 1500);
   const [pu, setPu] = useState("017");
-  const [fig, setFig] = useState({ A: "", B: "", C: "", D: "" });
+  const [fig, setFig] = useState<Record<string, string>>({});
   const [smsText, setSmsText] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -187,10 +187,10 @@ export default function Phones() {
         <PhoneShell title="Polling agent · SMS" subtitle={`${AGENT} → ${SHORTCODE}`}>
           <Bubbles msgs={agentMsgs ?? []} />
           <div className="space-y-2 border-t border-white/10 p-2">
-            <div className="grid grid-cols-5 gap-1.5">
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${PARTIES.length + 1}, minmax(0, 1fr))` }}>
               <input value={pu} onChange={(e) => setPu(e.target.value)} placeholder="PU" className="col-span-1 rounded bg-white/10 px-2 py-1 text-xs text-white outline-none" />
-              {(["A", "B", "C", "D"] as const).map((p) => (
-                <input key={p} value={fig[p]} onChange={(e) => setFig({ ...fig, [p]: e.target.value })} placeholder={partyName(p)} className="rounded bg-white/10 px-2 py-1 text-xs text-white outline-none" />
+              {PARTIES.map((p) => (
+                <input key={p} value={fig[p] ?? ""} onChange={(e) => setFig({ ...fig, [p]: e.target.value })} placeholder={partyName(p)} className="rounded bg-white/10 px-2 py-1 text-xs text-white outline-none" />
               ))}
             </div>
             <div className="flex gap-1.5">

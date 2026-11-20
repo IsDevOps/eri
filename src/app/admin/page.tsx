@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import AdminSetup from "@/components/AdminSetup";
 import { usePoll } from "@/lib/client";
 
 interface User { id: number; email: string; name: string; role: "admin" | "observer" | "witness"; phone: string | null; phone_verified: boolean; disabled: boolean; created_at: string }
@@ -86,6 +87,8 @@ export default function Admin() {
           </table>
         </div>
       </section>
+
+      <AdminSetup />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2">
         <form onSubmit={create} className={`${card} space-y-3`}>

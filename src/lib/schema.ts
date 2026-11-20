@@ -1,5 +1,22 @@
+import { DEFAULT_PARTIES } from "./config";
+
+/** Admin-managed parties. `key` is the one-letter internal key used in stored results and in SMS (A120). */
+export const PARTY_TABLE_SQL = `
+create table if not exists party (
+  key text primary key check (key ~ '^[A-Z]$'),
+  acronym text not null unique,
+  name text not null,
+  sort int not null default 0,
+  active boolean not null default true
+);
+insert into party (key, acronym, name, sort)
+  select * from (values ${DEFAULT_PARTIES.map((p, i) => `('${p.key}', '${p.acronym}', '${p.name}', ${i})`).join(", ")}) as v(key, acronym, name, sort)
+  where not exists (select 1 from party);
+`;
+
 export const SCHEMA_SQL = `
-drop table if exists app_user, audit_log, outbox, alert, collation_entry, submission, witness, polling_unit, ward, lga cascade;
+drop table if exists app_user, audit_log, outbox, alert, collation_entry, submission, witness, polling_unit, ward, lga, party cascade;
+${PARTY_TABLE_SQL}
 
 create table app_user (
   id serial primary key,

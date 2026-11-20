@@ -4,7 +4,7 @@ Entry for the **"Every Vote, Every Voice"** hackathon. Ẹ̀rí (Yorùbá: *witn
 **between** the polling-unit result sheet (Form EC8A) and the final declaration (EC8E) — ward (EC8B), LGA (EC8C), state (EC8D) — and alerts the
 witnesses when their numbers change. It complements IReV (INEC) and E Don Kast (polling-unit crowdsourcing); it does not replace them.
 
-> **Real names, invented numbers.** The geography and parties are real — the FCT, *Abuja Municipal Area Council* and four of its wards (City Centre, Garki, Wuse, Gwarinpa), and four INEC-registered parties (APC, LP, NNPP, PDP) — but every vote figure is fictional sample data for the prototype, not an election result. Polling-unit codes (001–040) are this app’s own references, not INEC’s. Parties are always shown in fixed alphabetical order; nothing ranks them.
+> **Real names, invented numbers.** The geography and parties are real — the FCT, *Abuja Municipal Area Council* and four of its wards (City Centre, Garki, Wuse, Gwarinpa), and four INEC-registered parties to start with (APC, LP, NNPP, PDP; an admin can add or rename parties) — but every vote figure is fictional sample data for the prototype, not an election result. Polling-unit codes (001–040) are this app’s own references, not INEC’s; an admin can add wards and polling units. Parties are always shown in fixed alphabetical order; nothing ranks them.
 
 ## Run it
 
@@ -153,7 +153,7 @@ Serverless limits to know: uploaded photos go to a temp folder that does not per
 | Public | no account | `/` (**Trust Desk**: trace a result, check an image, send a private incident report), `/results` (**public results trail**), `/login`, `/register`, `/api/public/pu/<code>`, `/api/public/trail` |
 | **Witness** | choose *Witness* at sign-up, then confirm your phone with an SMS code | `/witness` — submit your polling unit's EC8A result (figures or photo), see the status of your polling units, your alerts, language/voice prefs |
 | **Observer** | choose *Observer* at sign-up (email + password; no phone needed) | `/dashboard` (Proof Tree), `/ear` (Live Ear), tribunal evidence PDFs |
-| **Admin** | created by an admin | everything above + `/admin` (users, roles, audit log, clear live activity) and `/phone` (field channels: SMS, USSD, WhatsApp) |
+| **Admin** | created by an admin | everything above + `/admin` (users, roles, **parties, wards and polling units**, audit log, clear live activity) and `/phone` (field channels: SMS, USSD, WhatsApp) |
 
 How it is enforced
 - Email + password; passwords hashed with **scrypt**; sessions are **signed, httpOnly, SameSite=Lax cookies** (8 h). The user is re-read from the DB on every request, so disabling an account or changing a role takes effect immediately.
@@ -194,6 +194,7 @@ Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` 
 - Hausa / Yorùbá / Igbo / Pidgin strings are **drafts** and need native-speaker review before any real use.
 - The Claude-vision, Whisper and Africa's Talking code paths are written but have **not been exercised against live keys**; the offline fallbacks are what is tested.
 - Sample audio is macOS `say`; the server live-mic path records 7-second chunks and relies on the STT provider. The browser-mic path is tested with a mocked recognizer (no real microphone or speech engine was exercised).
+- Add parties and polling units **before** collation starts. A party added later counts as 0 in figures already read out, so a ward announced without it will show that party's witnessed votes as unexplained. Reseeding (`npm run seed`) resets parties, wards and polling units to the starter set.
 - Real deployment still needs a shared rate-limit store, email-based password reset and MFA (see *Accounts*).
 
 ## Credits

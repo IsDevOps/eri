@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { PARTIES, PARTY_NAME, type Tally } from "./config";
+import { PARTIES, PARTY_NAME, partyList, type Tally } from "./config";
 import { spokenId, wordsToNumber } from "./numbers";
 import { openaiEnabled, openaiJson } from "./providers/openai";
 
@@ -15,18 +15,21 @@ export interface ExtractContext {
 }
 
 const STOP = new Set(["party", "ward", "polling", "pu", "lga", "local", "state", "total", "dropped", "cancelled", "canceled", "voided", "excluded", "unit", "collation"]);
-const LETTER: Record<string, (typeof PARTIES)[number]> = {
-  a: "A", ay: "A", b: "B", bee: "B", c: "C", cee: "C", see: "C", sea: "C", d: "D", dee: "D",
+/** Spoken names of the first letters, as a speech recogniser may write them ("party bee 400"). */
+const LETTER_WORDS: Record<string, string> = { ay: "A", bee: "B", cee: "C", see: "C", sea: "C", dee: "D", eee: "E", eff: "F", gee: "G", aitch: "H" };
+const letterFor = (tok: string | undefined): string | undefined => {
+  if (!tok) return undefined;
+  const up = tok.toUpperCase();
+  const k = LETTER_WORDS[tok] ?? (up.length === 1 ? up : undefined);
+  return k && PARTIES.includes(k) ? k : undefined;
 };
 
-/** Party acronyms as the speech recogniser may write them: "apc", or spelled out "a p c". */
-const ACRONYMS: { party: (typeof PARTIES)[number]; seqs: string[][] }[] = PARTIES.map((p) => ({
-  party: p,
-  seqs: [[PARTY_NAME[p].toLowerCase()], PARTY_NAME[p].toLowerCase().split("")],
-}));
-function acronymAt(toks: string[], i: number): { party: (typeof PARTIES)[number]; len: number } | null {
-  for (const { party, seqs } of ACRONYMS)
-    for (const seq of seqs) if (seq.every((t, k) => toks[i + k] === t)) return { party, len: seq.length };
+/** Party acronyms as the speech recogniser may write them: "apc", or spelled out "a p c". Built from the live party list. */
+function acronymAt(toks: string[], i: number): { party: string; len: number } | null {
+  for (const party of PARTIES) {
+    const word = PARTY_NAME[party].toLowerCase();
+    for (const seq of [[word], word.split("")]) if (seq.every((t, k) => toks[i + k] === t)) return { party, len: seq.length };
+  }
   return null;
 }
 
@@ -88,7 +91,7 @@ export function extractRules(transcript: string, ctx: ExtractContext = {}): { en
       cur.dropped = true;
     } else if (cur) {
       // "party A 3,120" or an acronym: "APC 3,120" / "A P C 3,120"
-      let letter: (typeof PARTIES)[number] | undefined;
+      let letter: string | undefined;
       let from = i + 1;
       if (w === "party") {
         const ac = acronymAt(toks, i + 1);
@@ -96,7 +99,7 @@ export function extractRules(transcript: string, ctx: ExtractContext = {}): { en
           letter = ac.party;
           from = i + 1 + ac.len;
         } else {
-          letter = LETTER[toks[i + 1]];
+          letter = letterFor(toks[i + 1]);
           from = i + 2;
         }
       } else {
@@ -121,9 +124,9 @@ export function extractRules(transcript: string, ctx: ExtractContext = {}): { en
   return { entries, ctx: { ward: wardCtx } };
 }
 
-const EXTRACT_PROMPT =
+const extractPrompt = () =>
   "You extract election collation announcements from a transcript of a collation officer (ward, LGA or state) reading results aloud (English, Nigerian Pidgin, Hausa, Yoruba or Igbo). " +
-  "Parties are APC, LP, NNPP and PDP (they may be spoken as letters, e.g. A P C). In the JSON use the keys A=APC, B=LP, C=NNPP, D=PDP. Return ONLY a JSON array. Each item: " +
+  `Parties are ${partyList()} (they may be spoken as letters, e.g. A P C). In the JSON use the keys ${PARTIES.map((p) => `${p}=${PARTY_NAME[p]}`).join(", ")}. Return ONLY a JSON array. Each item: ` +
   '{"level":"pu_at_ward"|"ward"|"lga"|"state","ward":<number|null>,"pu":"<3-digit string|null>","tally":{"A":n,"B":n,...},"dropped":<bool>}. ' +
   "Use level pu_at_ward for a single polling unit line read at ward collation, ward for a ward total, lga for an LGA total, state for a state total. " +
   "Set dropped=true only if the officer says a polling unit result is cancelled/dropped/excluded. Never invent figures.";
@@ -148,7 +151,7 @@ async function extractClaude(transcript: string, ctx: ExtractContext): Promise<E
   const msg = await client.messages.create({
     model: "claude-sonnet-5-5",
     max_tokens: 1500,
-    system: EXTRACT_PROMPT,
+    system: extractPrompt(),
     messages: [{ role: "user", content: userMsg(transcript, ctx) }],
   });
   const text = msg.content.map((b) => (b.type === "text" ? b.text : "")).join("");
@@ -158,7 +161,7 @@ async function extractClaude(transcript: string, ctx: ExtractContext): Promise<E
 /** OpenAI JSON mode returns an object, so the array is requested under "entries". */
 async function extractOpenAI(transcript: string, ctx: ExtractContext): Promise<ExtractedEntry[]> {
   const out = (await openaiJson(
-    EXTRACT_PROMPT.replace("Return ONLY a JSON array. Each item:", 'Return ONLY a JSON object {"entries":[...]}. Each item of entries:'),
+    extractPrompt().replace("Return ONLY a JSON array. Each item:", 'Return ONLY a JSON object {"entries":[...]}. Each item of entries:'),
     userMsg(transcript, ctx),
     1500,
   )) as { entries?: Raw[] };

@@ -1,7 +1,7 @@
 import { guard } from "@/lib/auth";
 import { PARTIES, partyName, type Tally } from "@/lib/config";
 import { json } from "@/lib/http";
-import { submitResult } from "@/lib/services";
+import { previewResult, submitResult } from "@/lib/services";
 
 // A signed-in, phone-verified witness submits the figures on the EC8A result sheet. The identity is the session, never a client-supplied phone.
 export const POST = guard(["witness"], async (req, _ctx, user) => {
@@ -13,6 +13,11 @@ export const POST = guard(["witness"], async (req, _ctx, user) => {
     const n = Number(b[p] ?? 0);
     if (!Number.isInteger(n) || n < 0 || n > 100000) return json({ ok: false, error: `${partyName(p)}: enter a whole number between 0 and 100000.` }, 400);
     tally[p] = n;
+  }
+  if (b.practice === true) {
+    const p = await previewResult(pu, tally, user.phone);
+    if (!p.ok) return json({ ok: false, error: `No polling unit with code ${pu}.` }, 404);
+    return json({ ok: true, practice: true, pu, agree: p.agree, others: p.others, status: p.status, reason: p.reason });
   }
   const r = await submitResult({ puCode: pu, tally, phone: user.phone, source: "sms", raw: "portal" });
   if (!r.ok) return json({ ok: false, error: `No polling unit with code ${pu}.` }, 404);

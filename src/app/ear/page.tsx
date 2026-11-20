@@ -290,7 +290,7 @@ export default function LiveEar() {
                 value={pasted}
                 onChange={(e) => setPasted(e.target.value)}
                 rows={3}
-                placeholder='Ward four total. APC three thousand one hundred and twenty. LP …'
+                placeholder={`Ward four total. ${partyName(PARTIES[0])} three thousand one hundred and twenty. ${partyName(PARTIES[1] ?? PARTIES[0])} …`}
                 className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 p-2 text-sm text-slate-200 outline-none focus:border-sky-400/60"
               />
               <button
@@ -306,7 +306,7 @@ export default function LiveEar() {
               </button>
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              Browser listening is free (Chrome / Edge, internet needed, English works best). Say each announcement as “Ward 4. APC 3,120. LP 400.” — server transcription needs an
+              Browser listening is free (Chrome / Edge, internet needed, English works best). Say each announcement as “Ward 4. {partyName(PARTIES[0])} 3,120. {partyName(PARTIES[1] ?? PARTIES[0])} 400.” — server transcription needs an
               OpenAI key but handles Hausa, Yorùbá and Igbo better.
             </p>
             {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-sm text-red-300">{error}</p>}

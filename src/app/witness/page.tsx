@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { Pill } from "@/components/TreeView";
-import { usePoll } from "@/lib/client";
+import { readJson, usePoll } from "@/lib/client";
 import { LANGS, LANG_NAMES, PARTIES, fmt, partyName, type Lang } from "@/lib/config";
 import { witVerb } from "@/lib/plural";
 import type { Status } from "@/lib/reconcile";
@@ -89,19 +89,29 @@ function Verify({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** Every party field and the PU code are filled in. */
+const e0 = (pu: string, vals: Record<string, string>) => pu.length > 0 && PARTIES.every((p) => (vals[p] ?? "") !== "");
+
 function Submit({ onDone }: { onDone: () => void }) {
   const [pu, setPu] = useState("");
   const [vals, setVals] = useState<Record<string, string>>({});
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string; status?: Status; practice?: boolean } | null>(null);
   const file = useRef<HTMLInputElement>(null);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const r = await post("/api/witness/submit", { pu, ...vals });
-    const j = await r.json();
-    setMsg(j.ok ? { ok: true, text: `Recorded for PU ${j.pu}. ${witVerb(j.agree)}. ${j.reason ?? ""}` } : { ok: false, text: j.error });
-    if (j.ok) onDone();
+  async function send(practice: boolean) {
+    const r = await post("/api/witness/submit", { pu, ...vals, practice });
+    const j = await readJson<{ ok?: boolean; pu?: string; agree?: number; reason?: string; status?: Status; others?: number }>(r);
+    if (!j.ok) return setMsg({ ok: false, text: j.error ?? "Could not submit." });
+    const base = practice
+      ? `Practice only — nothing was recorded or sent. If you submitted these figures for PU ${j.pu}: ${j.reason}`
+      : `Recorded for PU ${j.pu}. ${j.reason || `${witVerb(j.agree ?? 1)}.`}`;
+    setMsg({ ok: true, text: base, status: j.status, practice });
+    if (!practice) onDone();
   }
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    return send(false);
+  };
   async function photo(f: File) {
     const fd = new FormData();
     fd.set("file", f);
@@ -117,8 +127,8 @@ function Submit({ onDone }: { onDone: () => void }) {
     <section className={card}>
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-300">Submit your polling unit’s result (EC8A)</h2>
       <form onSubmit={submit} className="space-y-3">
-        <div className="grid grid-cols-5 gap-2">
-          <label className="col-span-1 text-xs text-slate-400">
+        <div className="grid gap-2" style={{ gridTemplateColumns: `minmax(0,1fr) repeat(${PARTIES.length}, minmax(0,1fr))` }}>
+          <label className="text-xs text-slate-400">
             PU code
             <input className={`${input} mt-1`} inputMode="numeric" maxLength={3} value={pu} onChange={(e) => setPu(e.target.value.replace(/\D/g, ""))} required />
           </label>
@@ -131,6 +141,13 @@ function Submit({ onDone }: { onDone: () => void }) {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-medium text-white hover:bg-sky-400">Submit figures</button>
+          <button
+            type="button"
+            onClick={() => (e0(pu, vals) ? send(true) : setMsg({ ok: false, text: "Fill in the polling-unit code and every party's figure to try it." }))}
+            className="rounded-lg border border-sky-400/40 px-4 py-2 text-sm text-sky-200 hover:bg-sky-400/10"
+          >
+            Try without recording
+          </button>
           <span className="text-xs text-slate-500">or</span>
           <label className="cursor-pointer rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/5">
             Upload a photo of the sheet
@@ -138,7 +155,15 @@ function Submit({ onDone }: { onDone: () => void }) {
           </label>
         </div>
       </form>
-      {msg && <p role="status" className={`mt-3 text-sm ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</p>}
+      <p className="mt-3 text-xs text-slate-500">
+        Type exactly what the signed EC8A sheet at your polling unit says — Ẹ̀rí never shows you the other witnesses’ numbers. “Contested” means witnesses at the same unit submitted different figures; “Flagged” means your figures differ from what was read out at ward collation. “Try without recording” shows which of these you would get, and records nothing.
+      </p>
+      {msg && (
+        <div role="status" className={`mt-3 rounded-lg border p-3 text-sm ${msg.practice ? "border-sky-400/30 bg-sky-400/5" : "border-transparent"} ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>
+          {msg.status && <div className="mb-1"><Pill status={msg.status} /></div>}
+          {msg.text}
+        </div>
+      )}
     </section>
   );
 }

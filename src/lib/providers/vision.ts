@@ -23,10 +23,10 @@ export function sha256(buf: Buffer): string {
   return createHash("sha256").update(buf).digest("hex");
 }
 
-const SHEET_PROMPT =
+const sheetPrompt = () =>
   "You read photographs of Nigerian INEC Form EC8A polling-unit result sheets. Return ONLY JSON: " +
-  '{"pu_code":"<3-digit string or null>","votes":{"APC":n,"LP":n,"NNPP":n,"PDP":n},"confidence":<0-1>,"note":"<short>"}. ' +
-  "Each row of the sheet is a party; use the party acronym as the key and ignore parties other than these four. " +
+  `{"pu_code":"<3-digit string or null>","votes":{${PARTIES.map((p) => `"${PARTY_NAME[p]}":n`).join(",")}},"confidence":<0-1>,"note":"<short>"}. ` +
+  `Each row of the sheet is a party; use the party acronym as the key and ignore parties other than these ${PARTIES.length}. ` +
   "Read the handwritten figures exactly as written. If a figure is illegible use null for it and lower confidence. Never guess.";
 
 interface Parsed {
@@ -57,7 +57,7 @@ export async function readSheet(img: Buffer, mime: string): Promise<SheetReading
     const msg = await client.messages.create({
       model: "claude-sonnet-5-5",
       max_tokens: 400,
-      system: SHEET_PROMPT,
+      system: sheetPrompt(),
       messages: [
         {
           role: "user",
@@ -76,7 +76,7 @@ export async function readSheet(img: Buffer, mime: string): Promise<SheetReading
   }
   if (openaiEnabled()) {
     const json = (await openaiJson(
-      SHEET_PROMPT,
+      sheetPrompt(),
       [
         { type: "text", text: "Read this result sheet." },
         { type: "image_url", image_url: { url: `data:${mime};base64,${img.toString("base64")}` } },
