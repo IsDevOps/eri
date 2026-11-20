@@ -6,7 +6,7 @@
 |---|---|
 | Live demo | https://eri-hackathon.netlify.app |
 | Source code | https://github.com/ktechfest2/TEAM-6-3.0 |
-| Demo video (max 3 min) | *paste the link here once uploaded* |
+| Demo video (max 3 min) | https://vimeo.com/1248605903 |
 | Problem brief | [docs/PROBLEM-BRIEF.md](PROBLEM-BRIEF.md) |
 | System sketch | [docs/system-sketch.png](system-sketch.png) (source: [system-sketch.svg](system-sketch.svg)) |
 
@@ -98,5 +98,5 @@ The form has five fields, all required.
 | Email | the email of the person submitting |
 | Team name as assigned on github | the exact team name you were assigned (the repo is `ktechfest2/TEAM-6-3.0`) |
 | One-page problem brief (a link is fine) | https://github.com/ktechfest2/TEAM-6-3.0/blob/main/docs/PROBLEM-BRIEF.md |
-| Link to Demo | Live: https://eri-hackathon.netlify.app · Video: *paste the video link* · Code: https://github.com/ktechfest2/TEAM-6-3.0 |
+| Link to Demo | Live: https://eri-hackathon.netlify.app · Video: https://vimeo.com/1248605903 · Code: https://github.com/ktechfest2/TEAM-6-3.0 |
 | Was AI used in building this project | **Yes** (Anthropic's Claude via Claude Code for code, tests and docs; AI models in the product for reading photos and audio; see section 3) |
