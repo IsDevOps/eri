@@ -182,6 +182,12 @@ function MyPollingUnits({ subs }: { subs: Me["submissions"] }) {
             </div>
             <p className="mt-1 font-mono text-xs text-slate-400">{PARTIES.map((p) => `${partyName(p)} ${fmt(s.results[p] ?? 0)}`).join("  ")}</p>
             <p className="mt-1 text-sm text-slate-300">{s.reason}</p>
+            {s.status === "contested" && (
+              <p className="mt-1 text-xs text-amber-300">Observers see the figures most witnesses at this unit agree on, not only yours. If you copied your sheet exactly, your figures stay on record above as your own entry.</p>
+            )}
+            {s.status === "flagged" && (
+              <p className="mt-1 text-xs text-red-300">Your figures differ from what was read out at ward collation. Observers see both, and your entry is kept as evidence.</p>
+            )}
           </li>
         ))}
       </ul>

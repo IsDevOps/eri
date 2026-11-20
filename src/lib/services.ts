@@ -323,7 +323,9 @@ export async function puNode(puCode: string): Promise<(TreeNode & { wardNumber: 
   let found: (TreeNode & { wardNumber: number; wardLabel: string }) | null = null;
   walk(tree, (n, parent) => {
     if (n.level === "pu" && n.code === puCode && parent) {
-      found = { ...n, wardNumber: parseInt(parent.code ?? "0", 10), wardLabel: parent.label };
+      const { entries: _entries, ...rest } = n; // individual witness entries are for the observer tree only
+      void _entries;
+      found = { ...rest, wardNumber: parseInt(parent.code ?? "0", 10), wardLabel: parent.label };
     }
   });
   return found;

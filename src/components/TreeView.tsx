@@ -1,7 +1,7 @@
 "use client";
 import { wit } from "@/lib/plural";
 import { useEffect, useRef, useState } from "react";
-import { PARTIES, fmt, partyName, tallyTotal, type Tally } from "@/lib/config";
+import { PARTIES, fmt, partyName, tallyEq, tallyText, tallyTotal, type Tally } from "@/lib/config";
 import type { Status, TreeNode } from "@/lib/reconcile";
 
 export const STATUS_STYLE: Record<Status, { label: string; pill: string; dot: string }> = {
@@ -134,6 +134,9 @@ export function TreeView({
               )}
             </div>
             <div className="mt-0.5">
+              <div className="text-[10px] uppercase tracking-wide text-slate-500">
+                {n.level === "pu" ? (n.announced ? "Read out at ward" : n.expected ? "Witnessed" : "") : n.announced ? "Announced" : ""}
+              </div>
               <TallyChips t={n.announced ?? (n.level === "pu" ? n.expected : null)} gap={red || n.level === "pu" ? n.gap : null} />
             </div>
           </div>
@@ -199,6 +202,7 @@ export function NodeDetail({ node, path }: { node: TreeNode; path: TreeNode[] })
           </tr>
         </tbody>
       </table>
+      {node.level === "pu" && !!node.entries?.length && <WitnessEntries node={node} />}
       {node.level === "pu" && node.sources && (
         <p className="mt-3 text-xs text-slate-500">
           Witness channels: {node.sources.sms} SMS · {node.sources.whatsapp} WhatsApp · {node.sources.photo} photo
@@ -221,6 +225,37 @@ export function NodeDetail({ node, path }: { node: TreeNode; path: TreeNode[] })
           {node.level === "ward" && node.unwitnessedCapacity ? ` Unwitnessed PUs could account for at most ${fmt(node.unwitnessedCapacity)} votes.` : ""}
         </p>
       )}
+    </div>
+  );
+}
+
+const CHANNEL: Record<string, string> = { sms: "text or form", photo: "photo", whatsapp: "WhatsApp photo" };
+
+/** Each witness's own submission, so an observer can match a figure a witness typed against the figures the unit is proven on. */
+function WitnessEntries({ node }: { node: TreeNode }) {
+  const proven = node.expected ?? {};
+  return (
+    <div className="mt-4">
+      <h4 className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Witness entries ({node.entries!.length})</h4>
+      <p className="mt-1 text-xs text-slate-500">
+        The table above uses the figures most witnesses agree on{node.status === "contested" ? "; some entries below differ, which is why this unit is contested" : ""}.
+        Each line is one witness’s own submission.
+      </p>
+      <ul className="mt-2 space-y-1.5">
+        {node.entries!.map((e, i) => {
+          const differs = !tallyEq(e.results, proven);
+          return (
+            <li key={i} className={`rounded-lg border px-3 py-2 text-xs ${differs ? "border-amber-500/40 bg-amber-500/5" : "border-white/10"}`}>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <span className="font-mono text-slate-300">{e.who}</span>
+                <span className="text-slate-500">{CHANNEL[e.source] ?? e.source} · {new Date(e.at).toLocaleTimeString()}</span>
+              </div>
+              <div className="mt-1 font-mono tabular-nums text-slate-200">{tallyText(e.results)}</div>
+              {differs && <div className="mt-1 text-amber-300">Differs from the figures most witnesses agree on</div>}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

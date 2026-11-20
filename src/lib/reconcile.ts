@@ -38,7 +38,11 @@ export interface TreeNode {
   dropped?: boolean;
   registered?: number;
   unwitnessedCapacity?: number; // registered voters in unwitnessed PUs (upper bound of unexplained votes)
+  /** PU only: each witness's own entry (masked identity). Only the observer/admin tree carries it; puNode() strips it. */
+  entries?: { who: string; source: "sms" | "photo" | "whatsapp"; results: Tally; at: string }[];
 }
+
+const maskPhone = (p: string) => (p.length > 7 ? `${p.slice(0, 4)}••••${p.slice(-3)}` : "••••");
 
 export interface Row {
   lgas: { id: number; code: string; name: string; state: string }[];
@@ -154,6 +158,9 @@ export function buildTreeFromRows(r: Row): TreeNode {
               readAtWard,
               dropped,
               registered: pu.registered,
+              entries: subs
+                .map((x) => ({ who: maskPhone(x.phone), source: x.source, results: x.results, at: new Date(x.created_at).toISOString() }))
+                .sort((a, b) => a.at.localeCompare(b.at)),
             } satisfies TreeNode;
           });
 
