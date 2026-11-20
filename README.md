@@ -6,6 +6,18 @@ witnesses when their numbers change. It complements IReV (INEC) and E Don Kast (
 
 > **Real names, invented numbers.** The geography and parties are real — the FCT, *Abuja Municipal Area Council* and four of its wards (City Centre, Garki, Wuse, Gwarinpa), and four INEC-registered parties to start with (APC, LP, NNPP, PDP; an admin can add or rename parties) — but every vote figure is fictional sample data for the prototype, not an election result. Polling-unit codes (001–040) are this app’s own references, not INEC’s; an admin can add wards and polling units. Parties are always shown in fixed alphabetical order; nothing ranks them.
 
+## Submission documents
+
+| Deliverable | Where |
+|---|---|
+| Live demo | https://eri-hackathon.netlify.app |
+| One-page problem brief | [docs/PROBLEM-BRIEF.md](docs/PROBLEM-BRIEF.md) |
+| System sketch (diagram) | [docs/system-sketch.png](docs/system-sketch.png) · [SVG](docs/system-sketch.svg) |
+| Write-up (problem, solution, AI use, tools, credits) | [docs/SUBMISSION.md](docs/SUBMISSION.md) |
+| 3-minute demo script | [docs/DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md) |
+
+![System sketch](docs/system-sketch.png)
+
 ## Run it
 
 ```bash
@@ -197,5 +209,8 @@ Point the Africa's Talking SMS and USSD callbacks at `/api/sms` and `/api/ussd` 
 - Add parties and polling units **before** collation starts. A party added later counts as 0 in figures already read out, so a ward announced without it will show that party's witnessed votes as unexplained. Reseeding (`npm run seed`) resets parties, wards and polling units to the starter set.
 - Real deployment still needs a shared rate-limit store, email-based password reset and MFA (see *Accounts*).
 
-## Credits
-IReV (INEC) · E Don Kast · TechCabal: *The citizen-led platform trying to make Nigeria's vote collation transparent*.
+## Credits and AI declaration
+- **Prior art:** IReV (INEC) · E Don Kast · TechCabal: *The citizen-led platform trying to make Nigeria's vote collation transparent* · INEC's *Regulations and Guidelines for the Conduct of Elections*.
+- **Open source:** Next.js, React, Tailwind CSS, TypeScript, node-postgres (`pg`), `sharp`, `pdfkit`, `tsx`, ESLint. Hosting: Netlify and Supabase (Postgres).
+- **AI models and APIs (optional, by key):** Anthropic Claude (`@anthropic-ai/sdk`), OpenAI (`gpt-4o` vision and extraction, `whisper-1` speech to text), the browser Web Speech API. The reconciliation and flags are plain arithmetic, not AI.
+- **AI coding assistant (declared per hackathon rule 1.4):** this project was built with the help of Anthropic's Claude (via Claude Code) for code, tests and documentation. The team set the scope and design, directed the work, and reviewed and ran everything. See [docs/SUBMISSION.md](docs/SUBMISSION.md).
